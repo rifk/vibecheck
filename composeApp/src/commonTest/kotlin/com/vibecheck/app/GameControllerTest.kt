@@ -100,6 +100,41 @@ class GameControllerTest {
     }
 
     @Test
+    fun modelProgress_reflectsAttemptsAndBestRankPerModelBeforeSolve() = runTest {
+        val date = LocalDate.parse("2026-01-04")
+        val puzzle = DayPuzzle(
+            utcDate = date.toString(),
+            answer = "anchor",
+            models = listOf(
+                ModelPuzzle("m1", "Model 1", listOf("anchor", "chain", "ship")),
+                ModelPuzzle("m2", "Model 2", listOf("anchor", "dock", "port"))
+            )
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(date to puzzle)),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(date)
+        )
+
+        controller.loadToday()
+        controller.onGuessChanged("ship")
+        controller.submitGuess()
+
+        controller.onModelSelected("m2")
+        controller.onGuessChanged("port")
+        controller.submitGuess()
+        controller.onGuessChanged("dock")
+        controller.submitGuess()
+
+        val modelsById = controller.uiState.availableModels.associateBy { it.modelId }
+        assertEquals(1, modelsById.getValue("m1").attempts)
+        assertEquals(3, modelsById.getValue("m1").bestRank)
+        assertEquals(2, modelsById.getValue("m2").attempts)
+        assertEquals(2, modelsById.getValue("m2").bestRank)
+    }
+
+    @Test
     fun missingDate_showsUnavailableState_andCanRecoverByLoadingAvailableDate() = runTest {
         val availableDate = LocalDate.parse("2026-01-04")
         val missingDate = LocalDate.parse("2026-01-05")

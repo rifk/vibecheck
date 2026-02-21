@@ -188,6 +188,8 @@ private fun ModelSelector(
                 append(model.displayName)
                 if (model.modelId == selectedModelId) append(" (selected)")
                 if (model.locked) append(" (locked)")
+                append(" | guesses: ${model.attempts}")
+                model.bestRank?.let { append(" | best: #$it") }
             }
             Button(onClick = { onSelect(model.modelId) }, enabled = !model.locked) {
                 Text(label)

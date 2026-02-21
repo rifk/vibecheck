@@ -164,9 +164,12 @@ class GameController(
         }
 
         val models = puzzle.models.map { model ->
+            val modelGuesses = state.guessesByModel[model.modelId].orEmpty()
             ModelUiState(
                 modelId = model.modelId,
                 displayName = model.displayName,
+                attempts = modelGuesses.size,
+                bestRank = modelGuesses.minOfOrNull { it.rank },
                 locked = state.solved && state.solvedByModelId != model.modelId
             )
         }
@@ -238,6 +241,8 @@ data class GameUiState(
 data class ModelUiState(
     val modelId: String,
     val displayName: String,
+    val attempts: Int,
+    val bestRank: Int?,
     val locked: Boolean
 )
 
