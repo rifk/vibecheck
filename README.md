@@ -9,7 +9,9 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 - `SourceConfig` + `PuzzleSourceFactory` composition path so source mode can be switched later without touching game/UI layers.
 - `RemotePuzzleSource` + `RemotePuzzleClient` contracts are present for backend integration, while runtime defaults remain bundled-only.
 - Local persistence with `multiplatform-settings` for day state and basic stats.
+- Stats include streaks, wins/averages by model, best guesses by model, and recent solve history.
 - Shared Compose UI that renders model options dynamically based on each day file.
+- Per-date puzzle loads are cached via `CachingPuzzleSource` in app composition.
 - Content validator CLI module in `tools/content-validator`.
 - 90 bundled puzzle JSON files in `content/puzzles`.
 - Validator enforces the v1 continuous UTC date window (`2026-01-01` to `2026-03-31`).

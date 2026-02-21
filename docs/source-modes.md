@@ -6,6 +6,7 @@
 
 - `BUNDLED`: reads JSON files packaged with the app resources.
 - `REMOTE`: reserved for backend integration; in v1, this mode falls back to bundled unless a remote provider is explicitly wired.
+- runtime composition wraps the selected source in `CachingPuzzleSource` to avoid repeat fetch/parse work for the same UTC date.
 
 ## Composition path
 
@@ -14,6 +15,7 @@
 - `SourceConfig`, `SourceMode`, and factory:
   - `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/PuzzleSource.kt`
   - `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/PuzzleSourceFactory.kt`
+  - `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/CachingPuzzleSource.kt`
 - Remote path contracts:
   - `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/RemotePuzzleSource.kt`
   - `RemotePuzzleClient` fetches raw JSON; `RemotePuzzleSource` parses/validates via shared `PuzzleJsonParser`.
