@@ -9,8 +9,11 @@ plugins {
 
 tasks.register("qualityGate") {
     group = "verification"
-    description = "Runs validator and all app tests used as the iteration quality gate."
+    description = "Runs validator, tests, and platform build smoke checks."
     dependsOn(
+        ":composeApp:assembleDebug",
+        ":composeApp:wasmJsBrowserDistribution",
+        ":composeApp:linkDebugFrameworkIosSimulatorArm64",
         ":tools:content-validator:test",
         ":tools:content-validator:run",
         ":composeApp:allTests"

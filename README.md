@@ -32,6 +32,27 @@ Suggested commands:
 - `./gradlew :tools:content-validator:test`
 - `./gradlew :tools:content-validator:run`
 
+`qualityGate` now also verifies platform build outputs:
+
+- Android debug APK (`:composeApp:assembleDebug`)
+- Web production bundle (`:composeApp:wasmJsBrowserDistribution`)
+- iOS simulator framework (`:composeApp:linkDebugFrameworkIosSimulatorArm64`)
+
+## Run locally by platform
+
+- Android:
+  - `./gradlew :composeApp:installDebug` (with an emulator/device connected)
+  - APK output: `/Users/rif/code/testProject/composeApp/build/outputs/apk/debug/composeApp-debug.apk`
+- Web (Wasm):
+  - `./gradlew :composeApp:wasmJsBrowserDevelopmentRun`
+  - Production bundle: `/Users/rif/code/testProject/composeApp/build/dist/wasmJs/productionExecutable`
+- iOS:
+  - Open `/Users/rif/code/testProject/iosApp/iosApp.xcodeproj` in Xcode and run scheme `iosApp`.
+  - The app runs shared Compose UI via `MainViewController`.
+  - Command-line build example:
+    - `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath build/xcode-derived CODE_SIGNING_ALLOWED=NO build`
+  - Requires iOS platform components installed in Xcode (`Settings > Components`).
+
 ## Source isolation for future backend
 
 Gameplay and UI depend on `PuzzleSource` only.
