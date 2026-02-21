@@ -52,6 +52,7 @@ class GameEngineTest {
         assertEquals(2, statsAfterSecond.maxStreak)
         assertEquals(2, statsAfterSecond.winsByModel["model_a"])
         assertEquals(3.0, statsAfterSecond.averageGuessesByModel()["model_a"])
+        assertEquals(2, statsAfterSecond.bestGuessesByModel["model_a"])
         assertEquals(2, statsAfterSecond.solveHistoryByDate.size)
         assertEquals("model_a", statsAfterSecond.solveHistoryByDate["2026-01-06"]?.modelId)
         assertEquals(2, statsAfterSecond.solveHistoryByDate["2026-01-06"]?.guessesToSolve)
@@ -80,6 +81,20 @@ class GameEngineTest {
         assertEquals("2026-01-07", afterEarlier.lastSolvedDate)
         assertEquals(2, afterEarlier.currentStreak)
         assertEquals(2, afterEarlier.maxStreak)
+    }
+
+    @Test
+    fun bestGuessesByModel_keepsMinimumSolveCount() {
+        val initial = com.vibecheck.model.PlayerStats()
+        val dayOne = LocalDate.parse("2026-01-11")
+        val dayTwo = LocalDate.parse("2026-01-12")
+        val dayThree = LocalDate.parse("2026-01-13")
+
+        val first = GameEngine.updateStatsOnSolve(initial, dayOne, "model_a", 5)
+        val second = GameEngine.updateStatsOnSolve(first, dayTwo, "model_a", 3)
+        val third = GameEngine.updateStatsOnSolve(second, dayThree, "model_a", 4)
+
+        assertEquals(3, third.bestGuessesByModel["model_a"])
     }
 
     @Test

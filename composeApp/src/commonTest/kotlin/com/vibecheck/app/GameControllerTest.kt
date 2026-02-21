@@ -268,6 +268,7 @@ class GameControllerTest {
 
         assertTrue(firstController.uiState.solved)
         assertEquals(1, firstController.uiState.stats.totalWins)
+        assertEquals(2, firstController.uiState.stats.bestGuessesByModel["m1"])
         assertEquals(1, firstController.uiState.stats.recentSolves.size)
         assertEquals("2026-01-21", firstController.uiState.stats.recentSolves.first().utcDate)
         assertEquals(2, firstController.uiState.stats.recentSolves.first().guessesToSolve)
@@ -285,6 +286,7 @@ class GameControllerTest {
         assertEquals(1, secondController.uiState.bestRankForSelectedModel)
         assertEquals(1, secondController.uiState.stats.totalWins)
         assertEquals(1, secondController.uiState.stats.winsByModel["m1"])
+        assertEquals(2, secondController.uiState.stats.bestGuessesByModel["m1"])
         assertEquals(1, secondController.uiState.stats.recentSolves.size)
         assertEquals("m1", secondController.uiState.stats.recentSolves.first().modelId)
     }

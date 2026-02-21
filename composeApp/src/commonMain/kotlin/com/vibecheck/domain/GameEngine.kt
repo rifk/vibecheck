@@ -132,6 +132,14 @@ object GameEngine {
             put(solvedModelId, (this[solvedModelId] ?: 0) + 1)
         }
 
+        val bestGuessesByModel = currentStats.bestGuessesByModel.toMutableMap().apply {
+            val existingBest = this[solvedModelId]
+            put(
+                solvedModelId,
+                if (existingBest == null) guessesToSolve else minOf(existingBest, guessesToSolve)
+            )
+        }
+
         val solveHistoryByDate = currentStats.solveHistoryByDate.toMutableMap().apply {
             put(
                 solvedDateKey,
@@ -150,6 +158,7 @@ object GameEngine {
             lastSolvedDate = solvedDates.maxOrNull(),
             totalGuessesByModel = totalGuessesByModel,
             winsByModel = winsByModel,
+            bestGuessesByModel = bestGuessesByModel,
             solveHistoryByDate = solveHistoryByDate
         )
     }

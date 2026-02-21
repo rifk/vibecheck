@@ -26,6 +26,7 @@ data class PlayerStats(
     val lastSolvedDate: String? = null,
     val totalGuessesByModel: Map<String, Int> = emptyMap(),
     val winsByModel: Map<String, Int> = emptyMap(),
+    val bestGuessesByModel: Map<String, Int> = emptyMap(),
     val solveHistoryByDate: Map<String, DaySolveRecord> = emptyMap()
 ) {
     fun averageGuessesByModel(): Map<String, Double> {

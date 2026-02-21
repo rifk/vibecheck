@@ -164,6 +164,7 @@ private fun GameScreen(controller: GameController) {
             maxStreak = uiState.stats.maxStreak,
             winsByModel = uiState.stats.winsByModel,
             averages = uiState.stats.averageGuessesByModel,
+            bests = uiState.stats.bestGuessesByModel,
             recentSolves = uiState.stats.recentSolves
         )
 
@@ -205,6 +206,7 @@ private fun StatsCard(
     maxStreak: Int,
     winsByModel: Map<String, Int>,
     averages: Map<String, Double>,
+    bests: Map<String, Int>,
     recentSolves: List<SolveRecordUi>
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -228,6 +230,14 @@ private fun StatsCard(
                 averages.forEach { (modelId, avg) ->
                     val rounded = round(avg * 100.0) / 100.0
                     Text("$modelId: $rounded")
+                }
+            }
+
+            if (bests.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("Best solve guesses per model")
+                bests.forEach { (modelId, best) ->
+                    Text("$modelId: $best")
                 }
             }
 
