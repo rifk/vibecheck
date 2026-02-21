@@ -6,6 +6,7 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 
 - Shared domain model and gameplay engine for daily word ranking gameplay.
 - `PuzzleSource` seam with bundled JSON source (`BundledPuzzleSource`) for v1.
+- `SourceConfig` + `PuzzleSourceFactory` composition path so source mode can be switched later without touching game/UI layers.
 - Local persistence with `multiplatform-settings` for day state and basic stats.
 - Shared Compose UI that renders model options dynamically based on each day file.
 - Content validator CLI module in `tools/content-validator`.
@@ -20,14 +21,19 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 
 ## Build and test
 
-This repo currently does not include a Gradle wrapper. Use a local Gradle installation or import in IntelliJ/Android Studio.
-
 Suggested commands:
 
-- `gradle :composeApp:allTests`
-- `gradle :tools:content-validator:test`
-- `gradle :tools:content-validator:run --args='content/puzzles'`
+- `./gradlew :composeApp:allTests`
+- `./gradlew :tools:content-validator:test`
+- `./gradlew :tools:content-validator:run --args='/Users/rif/code/testProject/content/puzzles'`
 
 ## Source isolation for future backend
 
-Gameplay and UI depend on `PuzzleSource` only. Switching to backend later is expected to add a new `PuzzleSource` implementation and choose source mode in composition root without changing engine/UI code.
+Gameplay and UI depend on `PuzzleSource` only.
+
+Current composition uses:
+
+- `AppConfig(sourceConfig = SourceConfig(...))` in `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/app/AppContainer.kt`
+- `PuzzleSourceFactory` in `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/PuzzleSourceFactory.kt`
+
+`SourceMode.REMOTE` exists as a v1-safe placeholder and currently falls back to bundled source unless a remote provider is supplied.

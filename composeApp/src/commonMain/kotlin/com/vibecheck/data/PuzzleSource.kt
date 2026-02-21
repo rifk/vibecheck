@@ -8,5 +8,11 @@ interface PuzzleSource {
 }
 
 enum class SourceMode {
-    BUNDLED
+    BUNDLED,
+    REMOTE
 }
+
+data class SourceConfig(
+    val mode: SourceMode = SourceMode.BUNDLED,
+    val remoteBaseUrl: String? = null
+)
