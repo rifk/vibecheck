@@ -2,6 +2,7 @@ package com.vibecheck.domain
 
 import com.vibecheck.model.DayPlayState
 import com.vibecheck.model.DayPuzzle
+import com.vibecheck.model.DaySolveRecord
 import com.vibecheck.model.GuessOutcome
 import com.vibecheck.model.PlayerStats
 import kotlinx.datetime.DatePeriod
@@ -133,6 +134,16 @@ object GameEngine {
             put(solvedModelId, (this[solvedModelId] ?: 0) + 1)
         }
 
+        val solveHistoryByDate = currentStats.solveHistoryByDate.toMutableMap().apply {
+            put(
+                solvedDateKey,
+                DaySolveRecord(
+                    modelId = solvedModelId,
+                    guessesToSolve = guessesToSolve
+                )
+            )
+        }
+
         return currentStats.copy(
             totalWins = currentStats.totalWins + 1,
             currentStreak = nextStreak,
@@ -140,7 +151,8 @@ object GameEngine {
             solvedDates = currentStats.solvedDates + solvedDateKey,
             lastSolvedDate = solvedDateKey,
             totalGuessesByModel = totalGuessesByModel,
-            winsByModel = winsByModel
+            winsByModel = winsByModel,
+            solveHistoryByDate = solveHistoryByDate
         )
     }
 }

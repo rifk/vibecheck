@@ -193,7 +193,18 @@ class GameController(
                 currentStreak = persistedState.stats.currentStreak,
                 maxStreak = persistedState.stats.maxStreak,
                 winsByModel = persistedState.stats.winsByModel,
-                averageGuessesByModel = persistedState.stats.averageGuessesByModel()
+                averageGuessesByModel = persistedState.stats.averageGuessesByModel(),
+                recentSolves = persistedState.stats.solveHistoryByDate
+                    .toList()
+                    .sortedByDescending { (date, _) -> date }
+                    .take(7)
+                    .map { (date, record) ->
+                        SolveRecordUi(
+                            utcDate = date,
+                            modelId = record.modelId,
+                            guessesToSolve = record.guessesToSolve
+                        )
+                    }
             )
         )
     }
@@ -235,5 +246,12 @@ data class StatsUiState(
     val currentStreak: Int = 0,
     val maxStreak: Int = 0,
     val winsByModel: Map<String, Int> = emptyMap(),
-    val averageGuessesByModel: Map<String, Double> = emptyMap()
+    val averageGuessesByModel: Map<String, Double> = emptyMap(),
+    val recentSolves: List<SolveRecordUi> = emptyList()
+)
+
+data class SolveRecordUi(
+    val utcDate: String,
+    val modelId: String,
+    val guessesToSolve: Int
 )

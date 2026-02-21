@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.vibecheck.app.AppContainer
 import com.vibecheck.app.GameController
 import com.vibecheck.app.ModelUiState
+import com.vibecheck.app.SolveRecordUi
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlin.math.round
@@ -162,7 +163,8 @@ private fun GameScreen(controller: GameController) {
             currentStreak = uiState.stats.currentStreak,
             maxStreak = uiState.stats.maxStreak,
             winsByModel = uiState.stats.winsByModel,
-            averages = uiState.stats.averageGuessesByModel
+            averages = uiState.stats.averageGuessesByModel,
+            recentSolves = uiState.stats.recentSolves
         )
 
         Text("Guesses", style = MaterialTheme.typography.titleMedium)
@@ -200,7 +202,8 @@ private fun StatsCard(
     currentStreak: Int,
     maxStreak: Int,
     winsByModel: Map<String, Int>,
-    averages: Map<String, Double>
+    averages: Map<String, Double>,
+    recentSolves: List<SolveRecordUi>
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -223,6 +226,14 @@ private fun StatsCard(
                 averages.forEach { (modelId, avg) ->
                     val rounded = round(avg * 100.0) / 100.0
                     Text("$modelId: $rounded")
+                }
+            }
+
+            if (recentSolves.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("Recent solves")
+                recentSolves.forEach { record ->
+                    Text("${record.utcDate}: ${record.modelId} in ${record.guessesToSolve}")
                 }
             }
         }

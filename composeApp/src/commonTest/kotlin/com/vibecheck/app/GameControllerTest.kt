@@ -233,6 +233,9 @@ class GameControllerTest {
 
         assertTrue(firstController.uiState.solved)
         assertEquals(1, firstController.uiState.stats.totalWins)
+        assertEquals(1, firstController.uiState.stats.recentSolves.size)
+        assertEquals("2026-01-21", firstController.uiState.stats.recentSolves.first().utcDate)
+        assertEquals(2, firstController.uiState.stats.recentSolves.first().guessesToSolve)
 
         val secondController = GameController(
             puzzleSource = source,
@@ -247,6 +250,45 @@ class GameControllerTest {
         assertEquals(1, secondController.uiState.bestRankForSelectedModel)
         assertEquals(1, secondController.uiState.stats.totalWins)
         assertEquals(1, secondController.uiState.stats.winsByModel["m1"])
+        assertEquals(1, secondController.uiState.stats.recentSolves.size)
+        assertEquals("m1", secondController.uiState.stats.recentSolves.first().modelId)
+    }
+
+    @Test
+    fun recentSolveHistory_isOrderedMostRecentFirst() = runTest {
+        val day1 = LocalDate.parse("2026-01-22")
+        val day2 = LocalDate.parse("2026-01-23")
+        val puzzle1 = DayPuzzle(
+            utcDate = day1.toString(),
+            answer = "serenity",
+            models = listOf(ModelPuzzle("m1", "Model 1", listOf("serenity", "calm")))
+        )
+        val puzzle2 = DayPuzzle(
+            utcDate = day2.toString(),
+            answer = "signal",
+            models = listOf(ModelPuzzle("m2", "Model 2", listOf("signal", "noise")))
+        )
+
+        val store = InMemoryStore()
+        val source = FakePuzzleSource(mapOf(day1 to puzzle1, day2 to puzzle2))
+        val controller = GameController(
+            puzzleSource = source,
+            gameStateStore = store,
+            utcDateProvider = FixedDateProvider(day1)
+        )
+
+        controller.loadDate(day1)
+        controller.onGuessChanged("serenity")
+        controller.submitGuess()
+
+        controller.loadDate(day2)
+        controller.onGuessChanged("signal")
+        controller.submitGuess()
+
+        val recent = controller.uiState.stats.recentSolves
+        assertEquals(2, recent.size)
+        assertEquals("2026-01-23", recent[0].utcDate)
+        assertEquals("2026-01-22", recent[1].utcDate)
     }
 }
 

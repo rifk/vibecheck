@@ -25,7 +25,8 @@ data class PlayerStats(
     val solvedDates: Set<String> = emptySet(),
     val lastSolvedDate: String? = null,
     val totalGuessesByModel: Map<String, Int> = emptyMap(),
-    val winsByModel: Map<String, Int> = emptyMap()
+    val winsByModel: Map<String, Int> = emptyMap(),
+    val solveHistoryByDate: Map<String, DaySolveRecord> = emptyMap()
 ) {
     fun averageGuessesByModel(): Map<String, Double> {
         if (winsByModel.isEmpty()) return emptyMap()
@@ -39,6 +40,12 @@ data class PlayerStats(
         }.toMap()
     }
 }
+
+@Serializable
+data class DaySolveRecord(
+    val modelId: String,
+    val guessesToSolve: Int
+)
 
 @Serializable
 data class PersistedAppState(

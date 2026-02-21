@@ -52,6 +52,20 @@ class GameEngineTest {
         assertEquals(2, statsAfterSecond.maxStreak)
         assertEquals(2, statsAfterSecond.winsByModel["model_a"])
         assertEquals(3.0, statsAfterSecond.averageGuessesByModel()["model_a"])
+        assertEquals(2, statsAfterSecond.solveHistoryByDate.size)
+        assertEquals("model_a", statsAfterSecond.solveHistoryByDate["2026-01-06"]?.modelId)
+        assertEquals(2, statsAfterSecond.solveHistoryByDate["2026-01-06"]?.guessesToSolve)
+    }
+
+    @Test
+    fun solvingSameDateTwice_doesNotMutateStatsTwice() {
+        val initial = com.vibecheck.model.PlayerStats()
+        val day = LocalDate.parse("2026-01-07")
+
+        val first = GameEngine.updateStatsOnSolve(initial, day, "model_a", 3)
+        val second = GameEngine.updateStatsOnSolve(first, day, "model_a", 1)
+
+        assertEquals(first, second)
     }
 
     @Test
