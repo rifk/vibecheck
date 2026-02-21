@@ -6,3 +6,13 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10" apply false
     id("com.android.application") version "8.6.1" apply false
 }
+
+tasks.register("qualityGate") {
+    group = "verification"
+    description = "Runs validator and all app tests used as the iteration quality gate."
+    dependsOn(
+        ":tools:content-validator:test",
+        ":tools:content-validator:run",
+        ":composeApp:allTests"
+    )
+}

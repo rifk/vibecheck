@@ -21,3 +21,7 @@ application {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.named<JavaExec>("run") {
+    args(rootProject.layout.projectDirectory.dir("content/puzzles").asFile.absolutePath)
+}

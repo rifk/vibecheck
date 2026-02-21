@@ -23,9 +23,10 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 
 Suggested commands:
 
+- `./gradlew qualityGate`
 - `./gradlew :composeApp:allTests`
 - `./gradlew :tools:content-validator:test`
-- `./gradlew :tools:content-validator:run --args='/Users/rif/code/testProject/content/puzzles'`
+- `./gradlew :tools:content-validator:run`
 
 ## Source isolation for future backend
 
