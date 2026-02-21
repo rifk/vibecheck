@@ -124,6 +124,128 @@ class GameControllerTest {
         assertTrue(controller.uiState.puzzleAvailable)
         assertEquals("2026-01-04", controller.uiState.utcDate)
     }
+
+    @Test
+    fun relativeNavigation_movesAcrossUtcDays() = runTest {
+        val day1 = LocalDate.parse("2026-01-10")
+        val day2 = LocalDate.parse("2026-01-11")
+        val day3 = LocalDate.parse("2026-01-12")
+
+        val puzzle1 = DayPuzzle(
+            utcDate = day1.toString(),
+            answer = "anchor",
+            models = listOf(ModelPuzzle("m1", "Model 1", listOf("anchor", "chain")))
+        )
+        val puzzle2 = DayPuzzle(
+            utcDate = day2.toString(),
+            answer = "signal",
+            models = listOf(ModelPuzzle("m1", "Model 1", listOf("signal", "noise")))
+        )
+        val puzzle3 = DayPuzzle(
+            utcDate = day3.toString(),
+            answer = "harbor",
+            models = listOf(ModelPuzzle("m1", "Model 1", listOf("harbor", "port")))
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(
+                mapOf(
+                    day1 to puzzle1,
+                    day2 to puzzle2,
+                    day3 to puzzle3
+                )
+            ),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(day2)
+        )
+
+        controller.loadToday()
+        assertEquals("2026-01-11", controller.uiState.utcDate)
+
+        controller.loadPreviousDay()
+        assertEquals("2026-01-10", controller.uiState.utcDate)
+
+        controller.loadNextDay()
+        assertEquals("2026-01-11", controller.uiState.utcDate)
+
+        controller.loadNextDay()
+        assertEquals("2026-01-12", controller.uiState.utcDate)
+    }
+
+    @Test
+    fun selectedModelMetrics_trackAttemptCountAndBestRank() = runTest {
+        val date = LocalDate.parse("2026-01-20")
+        val puzzle = DayPuzzle(
+            utcDate = date.toString(),
+            answer = "signal",
+            models = listOf(
+                ModelPuzzle("m1", "Model 1", listOf("signal", "tone", "noise", "echo"))
+            )
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(date to puzzle)),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(date)
+        )
+
+        controller.loadToday()
+        assertEquals(0, controller.uiState.guessCountForSelectedModel)
+        assertEquals(null, controller.uiState.bestRankForSelectedModel)
+
+        controller.onGuessChanged("echo")
+        controller.submitGuess()
+        assertEquals(1, controller.uiState.guessCountForSelectedModel)
+        assertEquals(4, controller.uiState.bestRankForSelectedModel)
+
+        controller.onGuessChanged("noise")
+        controller.submitGuess()
+        assertEquals(2, controller.uiState.guessCountForSelectedModel)
+        assertEquals(3, controller.uiState.bestRankForSelectedModel)
+    }
+
+    @Test
+    fun persistedState_survivesControllerRestart() = runTest {
+        val day = LocalDate.parse("2026-01-21")
+        val puzzle = DayPuzzle(
+            utcDate = day.toString(),
+            answer = "harbor",
+            models = listOf(
+                ModelPuzzle("m1", "Model 1", listOf("harbor", "port", "dock"))
+            )
+        )
+
+        val store = InMemoryStore()
+        val source = FakePuzzleSource(mapOf(day to puzzle))
+        val dateProvider = FixedDateProvider(day)
+
+        val firstController = GameController(
+            puzzleSource = source,
+            gameStateStore = store,
+            utcDateProvider = dateProvider
+        )
+        firstController.loadToday()
+        firstController.onGuessChanged("port")
+        firstController.submitGuess()
+        firstController.onGuessChanged("harbor")
+        firstController.submitGuess()
+
+        assertTrue(firstController.uiState.solved)
+        assertEquals(1, firstController.uiState.stats.totalWins)
+
+        val secondController = GameController(
+            puzzleSource = source,
+            gameStateStore = store,
+            utcDateProvider = dateProvider
+        )
+        secondController.loadToday()
+
+        assertTrue(secondController.uiState.solved)
+        assertEquals(2, secondController.uiState.guessCountForSelectedModel)
+        assertEquals(1, secondController.uiState.bestRankForSelectedModel)
+        assertEquals(1, secondController.uiState.stats.totalWins)
+        assertEquals(1, secondController.uiState.stats.winsByModel["m1"])
+    }
 }
 
 private class FakePuzzleSource(

@@ -49,6 +49,7 @@ class GameEngineTest {
         assertEquals(2, statsAfterSecond.totalWins)
         assertEquals(2, statsAfterSecond.currentStreak)
         assertEquals(2, statsAfterSecond.maxStreak)
+        assertEquals(2, statsAfterSecond.winsByModel["model_a"])
         assertEquals(3.0, statsAfterSecond.averageGuessesByModel()["model_a"])
     }
 

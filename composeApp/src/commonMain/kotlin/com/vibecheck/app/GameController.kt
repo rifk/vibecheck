@@ -13,7 +13,9 @@ import com.vibecheck.model.DayPlayState
 import com.vibecheck.model.DayPuzzle
 import com.vibecheck.model.GuessOutcome
 import com.vibecheck.model.PersistedAppState
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 
 class GameController(
     private val puzzleSource: PuzzleSource,
@@ -30,6 +32,16 @@ class GameController(
 
     suspend fun loadToday() {
         loadDate(utcDateProvider.currentDate())
+    }
+
+    suspend fun loadPreviousDay() {
+        val reference = currentDate ?: utcDateProvider.currentDate()
+        loadDate(reference.plus(DatePeriod(days = -1)))
+    }
+
+    suspend fun loadNextDay() {
+        val reference = currentDate ?: utcDateProvider.currentDate()
+        loadDate(reference.plus(DatePeriod(days = 1)))
     }
 
     suspend fun loadDate(date: LocalDate) {
@@ -119,7 +131,12 @@ class GameController(
                 }
 
                 val rankMessage = "${result.outcome.guess} is ranked #${result.outcome.rank}."
-                val solveMessage = if (result.solvedNow) "You solved today's Vibe Check." else null
+                val solveGuessCount = result.updatedState.guessesByModel[result.updatedState.selectedModelId].orEmpty().size
+                val solveMessage = if (result.solvedNow) {
+                    "You solved today's Vibe Check in $solveGuessCount guesses."
+                } else {
+                    null
+                }
                 uiState = buildUiState(message = solveMessage ?: rankMessage, clearInput = true)
             }
         }
@@ -154,6 +171,7 @@ class GameController(
         }
 
         val guesses = state.guessesByModel[state.selectedModelId].orEmpty()
+        val bestRank = guesses.minOfOrNull { it.rank }
 
         return GameUiState(
             isLoading = false,
@@ -166,10 +184,13 @@ class GameController(
             solvedByModelId = state.solvedByModelId,
             guessInput = if (clearInput) "" else uiState.guessInput,
             message = message,
+            guessCountForSelectedModel = guesses.size,
+            bestRankForSelectedModel = bestRank,
             stats = StatsUiState(
                 totalWins = persistedState.stats.totalWins,
                 currentStreak = persistedState.stats.currentStreak,
                 maxStreak = persistedState.stats.maxStreak,
+                winsByModel = persistedState.stats.winsByModel,
                 averageGuessesByModel = persistedState.stats.averageGuessesByModel()
             )
         )
@@ -195,6 +216,8 @@ data class GameUiState(
     val solvedByModelId: String? = null,
     val guessInput: String = "",
     val message: String? = null,
+    val guessCountForSelectedModel: Int = 0,
+    val bestRankForSelectedModel: Int? = null,
     val stats: StatsUiState = StatsUiState()
 )
 
@@ -208,5 +231,6 @@ data class StatsUiState(
     val totalWins: Int = 0,
     val currentStreak: Int = 0,
     val maxStreak: Int = 0,
+    val winsByModel: Map<String, Int> = emptyMap(),
     val averageGuessesByModel: Map<String, Double> = emptyMap()
 )
