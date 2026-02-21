@@ -25,5 +25,16 @@ class PuzzleSourceFactory(
                 remoteProvider = { baseUrl -> RemotePuzzleSource(baseUrl, remoteClient) }
             )
         }
+
+        fun withTemplateClient(
+            httpGet: suspend (url: String) -> String?,
+            pathTemplate: String = "puzzles/{date}.json"
+        ): PuzzleSourceFactory {
+            val remoteClient = TemplateRemotePuzzleClient(
+                httpGet = httpGet,
+                pathTemplate = pathTemplate
+            )
+            return withRemoteClient(remoteClient)
+        }
     }
 }

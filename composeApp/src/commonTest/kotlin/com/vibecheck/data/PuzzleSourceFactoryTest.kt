@@ -55,6 +55,20 @@ class PuzzleSourceFactoryTest {
         assertIs<MarkerSource>(source)
         assertEquals("remote:https://api.vibecheck.example", source.marker)
     }
+
+    @Test
+    fun withTemplateClient_createsRemoteSourceWhenConfigured() {
+        val factory = PuzzleSourceFactory.withTemplateClient(httpGet = { null })
+
+        val source = factory.create(
+            SourceConfig(
+                mode = SourceMode.REMOTE,
+                remoteBaseUrl = "https://api.vibecheck.example"
+            )
+        )
+
+        assertIs<RemotePuzzleSource>(source)
+    }
 }
 
 private class MarkerSource(
