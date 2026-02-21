@@ -7,6 +7,7 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 - Shared domain model and gameplay engine for daily word ranking gameplay.
 - `PuzzleSource` seam with bundled JSON source (`BundledPuzzleSource`) for v1.
 - `SourceConfig` + `PuzzleSourceFactory` composition path so source mode can be switched later without touching game/UI layers.
+- `RemotePuzzleSource` + `RemotePuzzleClient` contracts are present for backend integration, while runtime defaults remain bundled-only.
 - Local persistence with `multiplatform-settings` for day state and basic stats.
 - Shared Compose UI that renders model options dynamically based on each day file.
 - Content validator CLI module in `tools/content-validator`.

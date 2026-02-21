@@ -14,10 +14,13 @@
 - `SourceConfig`, `SourceMode`, and factory:
   - `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/PuzzleSource.kt`
   - `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/PuzzleSourceFactory.kt`
+- Remote path contracts:
+  - `/Users/rif/code/testProject/composeApp/src/commonMain/kotlin/com/vibecheck/data/RemotePuzzleSource.kt`
+  - `RemotePuzzleClient` fetches raw JSON; `RemotePuzzleSource` parses/validates via shared `PuzzleJsonParser`.
 
 ## How to add backend later
 
-1. Create `RemotePuzzleSource` implementing `PuzzleSource`.
-2. In `AppContainer`, provide `remoteProvider` to `PuzzleSourceFactory`.
+1. Implement a concrete `RemotePuzzleClient` (HTTP layer, auth, retries).
+2. In `AppContainer`, create the factory via `PuzzleSourceFactory.withRemoteClient(...)`.
 3. Set `AppConfig(sourceConfig = SourceConfig(mode = SourceMode.REMOTE, remoteBaseUrl = ...))`.
 4. Keep domain/UI unchanged; only composition and data source wiring should change.

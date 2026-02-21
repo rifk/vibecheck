@@ -17,4 +17,13 @@ class PuzzleSourceFactory(
             }
         }
     }
+
+    companion object {
+        fun withRemoteClient(remoteClient: RemotePuzzleClient): PuzzleSourceFactory {
+            return PuzzleSourceFactory(
+                bundledProvider = { BundledPuzzleSource() },
+                remoteProvider = { baseUrl -> RemotePuzzleSource(baseUrl, remoteClient) }
+            )
+        }
+    }
 }
