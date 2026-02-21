@@ -158,6 +158,7 @@ class GameController(
             return uiState.copy(
                 isLoading = false,
                 puzzleAvailable = false,
+                solvedAnswer = null,
                 message = message
             )
         }
@@ -182,6 +183,7 @@ class GameController(
             guesses = guesses,
             solved = state.solved,
             solvedByModelId = state.solvedByModelId,
+            solvedAnswer = if (state.solved) puzzle.answer else null,
             guessInput = if (clearInput) "" else uiState.guessInput,
             message = message,
             guessCountForSelectedModel = guesses.size,
@@ -214,6 +216,7 @@ data class GameUiState(
     val guesses: List<GuessOutcome> = emptyList(),
     val solved: Boolean = false,
     val solvedByModelId: String? = null,
+    val solvedAnswer: String? = null,
     val guessInput: String = "",
     val message: String? = null,
     val guessCountForSelectedModel: Int = 0,

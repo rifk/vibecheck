@@ -28,17 +28,39 @@ sealed class GuessSubmissionResult {
 
 object GameEngine {
     fun initialDayState(puzzle: DayPuzzle, priorState: DayPlayState?): DayPlayState {
-        if (priorState != null) {
-            return priorState
+        val validModelIds = puzzle.models.map { it.modelId }.toSet()
+        val defaultModelId = puzzle.models.first().modelId
+
+        if (priorState == null) {
+            return DayPlayState(
+                utcDate = puzzle.utcDate,
+                selectedModelId = defaultModelId,
+                solved = false,
+                solvedByModelId = null,
+                guessesByModel = emptyMap()
+            )
         }
 
-        val defaultModelId = puzzle.models.first().modelId
+        val filteredGuesses = priorState.guessesByModel.filterKeys { it in validModelIds }
+
+        val solvedByModelId = priorState.solvedByModelId?.takeIf { it in validModelIds }
+            ?: filteredGuesses.entries.firstOrNull { (_, guesses) ->
+                guesses.any { it.rank == 1 }
+            }?.key
+        val solved = solvedByModelId != null
+
+        val selectedModelId = when {
+            solved -> solvedByModelId
+            priorState.selectedModelId in validModelIds -> priorState.selectedModelId
+            else -> defaultModelId
+        } ?: defaultModelId
+
         return DayPlayState(
             utcDate = puzzle.utcDate,
-            selectedModelId = defaultModelId,
-            solved = false,
-            solvedByModelId = null,
-            guessesByModel = emptyMap()
+            selectedModelId = selectedModelId,
+            solved = solved,
+            solvedByModelId = solvedByModelId,
+            guessesByModel = filteredGuesses
         )
     }
 

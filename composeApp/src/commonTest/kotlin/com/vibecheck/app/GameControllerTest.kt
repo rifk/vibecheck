@@ -63,6 +63,7 @@ class GameControllerTest {
         controller.submitGuess()
 
         assertTrue(controller.uiState.solved)
+        assertEquals("signal", controller.uiState.solvedAnswer)
         controller.onModelSelected("m2")
         assertEquals("m1", controller.uiState.selectedModelId)
     }
@@ -241,6 +242,7 @@ class GameControllerTest {
         secondController.loadToday()
 
         assertTrue(secondController.uiState.solved)
+        assertEquals("harbor", secondController.uiState.solvedAnswer)
         assertEquals(2, secondController.uiState.guessCountForSelectedModel)
         assertEquals(1, secondController.uiState.bestRankForSelectedModel)
         assertEquals(1, secondController.uiState.stats.totalWins)

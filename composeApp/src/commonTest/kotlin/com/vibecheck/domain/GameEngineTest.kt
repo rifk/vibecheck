@@ -2,6 +2,7 @@ package com.vibecheck.domain
 
 import com.vibecheck.model.DayPlayState
 import com.vibecheck.model.DayPuzzle
+import com.vibecheck.model.GuessOutcome
 import com.vibecheck.model.ModelPuzzle
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
@@ -80,5 +81,59 @@ class GameEngineTest {
 
         assertEquals(1, m2Guess.updatedState.guessesByModel["m1"]?.size)
         assertEquals(1, m2Guess.updatedState.guessesByModel["m2"]?.size)
+    }
+
+    @Test
+    fun initialState_reconcilesWhenPriorSelectedModelIsMissing() {
+        val puzzle = DayPuzzle(
+            utcDate = "2026-01-30",
+            answer = "signal",
+            models = listOf(
+                ModelPuzzle("newA", "New A", listOf("signal", "noise")),
+                ModelPuzzle("newB", "New B", listOf("signal", "tone"))
+            )
+        )
+        val prior = DayPlayState(
+            utcDate = "2026-01-30",
+            selectedModelId = "oldModel",
+            solved = false,
+            solvedByModelId = null,
+            guessesByModel = mapOf(
+                "oldModel" to listOf(GuessOutcome("signal", 1)),
+                "newA" to listOf(GuessOutcome("noise", 2))
+            )
+        )
+
+        val state = GameEngine.initialDayState(puzzle, prior)
+
+        assertEquals("newA", state.selectedModelId)
+        assertEquals(setOf("newA"), state.guessesByModel.keys)
+    }
+
+    @Test
+    fun initialState_restoresSolvedFromRankOneGuessIfSolvedModelMissing() {
+        val puzzle = DayPuzzle(
+            utcDate = "2026-01-31",
+            answer = "harbor",
+            models = listOf(
+                ModelPuzzle("m1", "M1", listOf("harbor", "port")),
+                ModelPuzzle("m2", "M2", listOf("harbor", "dock"))
+            )
+        )
+        val prior = DayPlayState(
+            utcDate = "2026-01-31",
+            selectedModelId = "m1",
+            solved = true,
+            solvedByModelId = "removed-model",
+            guessesByModel = mapOf(
+                "m2" to listOf(GuessOutcome("harbor", 1))
+            )
+        )
+
+        val state = GameEngine.initialDayState(puzzle, prior)
+
+        assertTrue(state.solved)
+        assertEquals("m2", state.solvedByModelId)
+        assertEquals("m2", state.selectedModelId)
     }
 }

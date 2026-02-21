@@ -144,6 +144,7 @@ private fun GameScreen(controller: GameController) {
 
         if (uiState.solved) {
             Text("Solved by model: ${uiState.solvedByModelId}")
+            uiState.solvedAnswer?.let { Text("Answer: $it") }
         }
 
         uiState.message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
