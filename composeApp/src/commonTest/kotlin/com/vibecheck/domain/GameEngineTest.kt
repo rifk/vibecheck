@@ -69,6 +69,36 @@ class GameEngineTest {
     }
 
     @Test
+    fun outOfOrderSolve_keepsLatestDateAndRecomputesCurrentStreak() {
+        val initial = com.vibecheck.model.PlayerStats()
+        val laterDay = LocalDate.parse("2026-01-07")
+        val earlierDay = LocalDate.parse("2026-01-06")
+
+        val afterLater = GameEngine.updateStatsOnSolve(initial, laterDay, "model_a", 3)
+        val afterEarlier = GameEngine.updateStatsOnSolve(afterLater, earlierDay, "model_b", 4)
+
+        assertEquals("2026-01-07", afterEarlier.lastSolvedDate)
+        assertEquals(2, afterEarlier.currentStreak)
+        assertEquals(2, afterEarlier.maxStreak)
+    }
+
+    @Test
+    fun fillingGapLater_extendsCurrentStreakFromLatestSolvedDate() {
+        val initial = com.vibecheck.model.PlayerStats()
+        val dayFive = LocalDate.parse("2026-01-05")
+        val daySeven = LocalDate.parse("2026-01-07")
+        val daySix = LocalDate.parse("2026-01-06")
+
+        val afterSeven = GameEngine.updateStatsOnSolve(initial, daySeven, "model_a", 2)
+        val withGap = GameEngine.updateStatsOnSolve(afterSeven, dayFive, "model_b", 3)
+        val gapFilled = GameEngine.updateStatsOnSolve(withGap, daySix, "model_c", 1)
+
+        assertEquals("2026-01-07", gapFilled.lastSolvedDate)
+        assertEquals(3, gapFilled.currentStreak)
+        assertEquals(3, gapFilled.maxStreak)
+    }
+
+    @Test
     fun separateModelHistories_arePreservedBeforeSolve() {
         val puzzle = DayPuzzle(
             utcDate = "2026-01-10",

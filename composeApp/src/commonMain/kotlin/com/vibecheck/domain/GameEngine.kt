@@ -121,10 +121,8 @@ object GameEngine {
             return currentStats
         }
 
-        val priorLastDate = currentStats.lastSolvedDate?.let(LocalDate::parse)
-        val expectedNextDate = priorLastDate?.plus(DatePeriod(days = 1))
-        val nextStreak = if (expectedNextDate == solvedDate) currentStats.currentStreak + 1 else 1
-        val nextMaxStreak = maxOf(currentStats.maxStreak, nextStreak)
+        val solvedDates = currentStats.solvedDates + solvedDateKey
+        val (currentStreak, maxStreak) = computeStreaks(solvedDates)
 
         val totalGuessesByModel = currentStats.totalGuessesByModel.toMutableMap().apply {
             put(solvedModelId, (this[solvedModelId] ?: 0) + guessesToSolve)
@@ -146,13 +144,42 @@ object GameEngine {
 
         return currentStats.copy(
             totalWins = currentStats.totalWins + 1,
-            currentStreak = nextStreak,
-            maxStreak = nextMaxStreak,
-            solvedDates = currentStats.solvedDates + solvedDateKey,
-            lastSolvedDate = solvedDateKey,
+            currentStreak = currentStreak,
+            maxStreak = maxStreak,
+            solvedDates = solvedDates,
+            lastSolvedDate = solvedDates.maxOrNull(),
             totalGuessesByModel = totalGuessesByModel,
             winsByModel = winsByModel,
             solveHistoryByDate = solveHistoryByDate
         )
+    }
+
+    private fun computeStreaks(solvedDates: Set<String>): Pair<Int, Int> {
+        if (solvedDates.isEmpty()) {
+            return 0 to 0
+        }
+
+        val ordered = solvedDates.map(LocalDate::parse).sorted()
+        var maxStreak = 1
+        var rolling = 1
+        for (index in 1 until ordered.size) {
+            rolling = if (ordered[index - 1].plus(DatePeriod(days = 1)) == ordered[index]) {
+                rolling + 1
+            } else {
+                1
+            }
+            maxStreak = maxOf(maxStreak, rolling)
+        }
+
+        var currentStreak = 1
+        for (index in ordered.lastIndex downTo 1) {
+            if (ordered[index - 1].plus(DatePeriod(days = 1)) == ordered[index]) {
+                currentStreak += 1
+            } else {
+                break
+            }
+        }
+
+        return currentStreak to maxStreak
     }
 }
