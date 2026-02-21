@@ -23,5 +23,9 @@ tasks.test {
 }
 
 tasks.named<JavaExec>("run") {
-    args(rootProject.layout.projectDirectory.dir("content/puzzles").asFile.absolutePath)
+    args(
+        rootProject.layout.projectDirectory.dir("content/puzzles").asFile.absolutePath,
+        "2026-01-01",
+        "90"
+    )
 }

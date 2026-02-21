@@ -2,6 +2,7 @@ package com.vibecheck.validator
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.LocalDate
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 import kotlin.test.Test
@@ -63,7 +64,10 @@ class ContentValidatorTest {
             """.trimIndent()
         )
 
-        val result = ContentValidator(expectedDayCount = 2).validateDirectory(dir)
+        val result = ContentValidator(
+            expectedDayCount = 2,
+            expectedStartDate = LocalDate.parse("2026-01-01")
+        ).validateDirectory(dir)
 
         assertTrue(result.isValid)
     }
@@ -87,6 +91,44 @@ class ContentValidatorTest {
 
         assertFalse(result.isValid)
         assertTrue(result.errors.any { it.contains("Expected 90 puzzle files") })
+    }
+
+    @Test
+    fun rejectsNonContiguousDateWindow() {
+        val dir = createTempPuzzleDir()
+
+        dir.resolve("2026-01-01.json").writeText(
+            """
+            {
+              "utcDate": "2026-01-01",
+              "answer": "serenity",
+              "models": [
+                {"modelId": "a", "displayName": "A", "rankedWords": ["serenity", "calm"]}
+              ]
+            }
+            """.trimIndent()
+        )
+
+        dir.resolve("2026-01-03.json").writeText(
+            """
+            {
+              "utcDate": "2026-01-03",
+              "answer": "signal",
+              "models": [
+                {"modelId": "b", "displayName": "B", "rankedWords": ["signal", "noise"]}
+              ]
+            }
+            """.trimIndent()
+        )
+
+        val result = ContentValidator(
+            expectedDayCount = 2,
+            expectedStartDate = LocalDate.parse("2026-01-01")
+        ).validateDirectory(dir)
+
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("Missing puzzle dates in expected window") })
+        assertTrue(result.errors.any { it.contains("outside expected window") })
     }
 
     private fun createTempPuzzleDir(): Path {

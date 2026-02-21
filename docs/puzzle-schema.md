@@ -26,7 +26,8 @@ Each puzzle day is stored as one JSON file in `content/puzzles` named `{utcDate}
 - `rankedWords[0]` must equal `answer`.
 - words must be normalized lowercase English words (`^[a-z]+(?:'[a-z]+)?$`).
 - duplicate words in one model list are not allowed.
-- v1 bundle must contain exactly 90 JSON files.
+- v1 bundle must contain exactly 90 JSON files covering a continuous UTC window.
+- current v1 window is `2026-01-01` through `2026-03-31`.
 
 ## Runtime semantics
 

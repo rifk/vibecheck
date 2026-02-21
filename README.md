@@ -12,6 +12,7 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 - Shared Compose UI that renders model options dynamically based on each day file.
 - Content validator CLI module in `tools/content-validator`.
 - 90 bundled puzzle JSON files in `content/puzzles`.
+- Validator enforces the v1 continuous UTC date window (`2026-01-01` to `2026-03-31`).
 
 ## Project layout
 

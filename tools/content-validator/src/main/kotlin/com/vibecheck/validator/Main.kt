@@ -1,11 +1,17 @@
 package com.vibecheck.validator
 
 import java.nio.file.Path
+import java.time.LocalDate
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    val directory = args.firstOrNull() ?: "content/puzzles"
-    val validator = ContentValidator(expectedDayCount = 90)
+    val directory = args.getOrNull(0) ?: "content/puzzles"
+    val expectedStartDate = args.getOrNull(1)?.let(LocalDate::parse)
+    val expectedDayCount = args.getOrNull(2)?.toIntOrNull() ?: 90
+    val validator = ContentValidator(
+        expectedDayCount = expectedDayCount,
+        expectedStartDate = expectedStartDate
+    )
     val result = validator.validateDirectory(Path.of(directory))
 
     if (!result.isValid) {

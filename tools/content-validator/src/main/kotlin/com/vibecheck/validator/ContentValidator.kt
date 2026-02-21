@@ -2,6 +2,7 @@ package com.vibecheck.validator
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.LocalDate
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
@@ -10,6 +11,7 @@ import kotlinx.serialization.json.Json
 
 class ContentValidator(
     private val expectedDayCount: Int = 90,
+    private val expectedStartDate: LocalDate? = null,
     private val json: Json = Json { ignoreUnknownKeys = true }
 ) {
     fun validateDirectory(contentDirectory: Path): ValidationResult {
@@ -29,15 +31,24 @@ class ContentValidator(
         }
 
         val seenDates = mutableSetOf<String>()
+        val parsedDates = mutableSetOf<LocalDate>()
         files.forEach { file ->
-            val fileErrors = validateFile(file, seenDates)
+            val fileErrors = validateFile(file, seenDates, parsedDates)
             errors += fileErrors
+        }
+
+        if (expectedStartDate != null) {
+            errors += validateExpectedDateWindow(parsedDates)
         }
 
         return ValidationResult(errors)
     }
 
-    private fun validateFile(file: Path, seenDates: MutableSet<String>): List<String> {
+    private fun validateFile(
+        file: Path,
+        seenDates: MutableSet<String>,
+        parsedDates: MutableSet<LocalDate>
+    ): List<String> {
         val errors = mutableListOf<String>()
         val payload = runCatching { file.inputStream().bufferedReader().readText() }
             .getOrElse {
@@ -65,6 +76,13 @@ class ContentValidator(
 
         if (file.name != "${dayPuzzle.utcDate}.json") {
             errors += "${file.name}: file name must match utcDate (${dayPuzzle.utcDate}.json)."
+        }
+
+        val parsedDate = runCatching { LocalDate.parse(dayPuzzle.utcDate) }.getOrNull()
+        if (parsedDate == null) {
+            errors += "${file.name}: utcDate must be a valid ISO date (YYYY-MM-DD)."
+        } else {
+            parsedDates += parsedDate
         }
 
         val normalizedAnswer = WordRules.normalize(dayPuzzle.answer)
@@ -105,6 +123,32 @@ class ContentValidator(
         }
 
         return errors
+    }
+
+    private fun validateExpectedDateWindow(parsedDates: Set<LocalDate>): List<String> {
+        val startDate = expectedStartDate ?: return emptyList()
+        val expectedDates = (0 until expectedDayCount)
+            .map { startDate.plusDays(it.toLong()) }
+            .toSet()
+
+        val errors = mutableListOf<String>()
+
+        val missing = expectedDates.minus(parsedDates).toList().sorted()
+        if (missing.isNotEmpty()) {
+            errors += "Missing puzzle dates in expected window from $startDate: ${summarizeDates(missing)}."
+        }
+
+        val unexpected = parsedDates.minus(expectedDates).toList().sorted()
+        if (unexpected.isNotEmpty()) {
+            errors += "Found puzzle dates outside expected window from $startDate: ${summarizeDates(unexpected)}."
+        }
+
+        return errors
+    }
+
+    private fun summarizeDates(dates: List<LocalDate>): String {
+        val preview = dates.take(5).joinToString(", ")
+        return if (dates.size > 5) "$preview ... (${dates.size} total)" else preview
     }
 }
 
