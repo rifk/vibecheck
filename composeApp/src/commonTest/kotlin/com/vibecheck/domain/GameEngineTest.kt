@@ -1,0 +1,83 @@
+package com.vibecheck.domain
+
+import com.vibecheck.model.DayPlayState
+import com.vibecheck.model.DayPuzzle
+import com.vibecheck.model.ModelPuzzle
+import kotlinx.datetime.LocalDate
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
+
+class GameEngineTest {
+    @Test
+    fun singleModelDay_canBePlayedAndSolved() {
+        val puzzle = DayPuzzle(
+            utcDate = "2026-01-01",
+            answer = "serenity",
+            models = listOf(
+                ModelPuzzle(
+                    modelId = "solo",
+                    displayName = "Solo Model",
+                    rankedWords = listOf("serenity", "calm", "peace", "quiet")
+                )
+            )
+        )
+
+        val initial = GameEngine.initialDayState(puzzle, priorState = null)
+        val guessResult = GameEngine.submitGuess(initial, puzzle, "calm")
+
+        val accepted = assertIs<GuessSubmissionResult.Accepted>(guessResult)
+        assertEquals(2, accepted.outcome.rank)
+        assertTrue(!accepted.updatedState.solved)
+
+        val solveResult = GameEngine.submitGuess(accepted.updatedState, puzzle, "serenity")
+        val solved = assertIs<GuessSubmissionResult.Accepted>(solveResult)
+        assertTrue(solved.solvedNow)
+        assertEquals("solo", solved.updatedState.solvedByModelId)
+    }
+
+    @Test
+    fun solvingUpdatesStreakAndAverages() {
+        val initial = com.vibecheck.model.PlayerStats()
+        val dayOne = LocalDate.parse("2026-01-05")
+        val dayTwo = LocalDate.parse("2026-01-06")
+
+        val statsAfterFirst = GameEngine.updateStatsOnSolve(initial, dayOne, "model_a", 4)
+        val statsAfterSecond = GameEngine.updateStatsOnSolve(statsAfterFirst, dayTwo, "model_a", 2)
+
+        assertEquals(2, statsAfterSecond.totalWins)
+        assertEquals(2, statsAfterSecond.currentStreak)
+        assertEquals(2, statsAfterSecond.maxStreak)
+        assertEquals(3.0, statsAfterSecond.averageGuessesByModel()["model_a"])
+    }
+
+    @Test
+    fun separateModelHistories_arePreservedBeforeSolve() {
+        val puzzle = DayPuzzle(
+            utcDate = "2026-01-10",
+            answer = "signal",
+            models = listOf(
+                ModelPuzzle("m1", "M1", listOf("signal", "noise", "tone")),
+                ModelPuzzle("m2", "M2", listOf("signal", "wave", "beam"))
+            )
+        )
+
+        var state = DayPlayState(
+            utcDate = puzzle.utcDate,
+            selectedModelId = "m1",
+            solved = false,
+            solvedByModelId = null,
+            guessesByModel = emptyMap()
+        )
+
+        val m1Guess = GameEngine.submitGuess(state, puzzle, "noise") as GuessSubmissionResult.Accepted
+        state = m1Guess.updatedState
+
+        state = GameEngine.selectModel(state, puzzle, "m2")
+        val m2Guess = GameEngine.submitGuess(state, puzzle, "wave") as GuessSubmissionResult.Accepted
+
+        assertEquals(1, m2Guess.updatedState.guessesByModel["m1"]?.size)
+        assertEquals(1, m2Guess.updatedState.guessesByModel["m2"]?.size)
+    }
+}

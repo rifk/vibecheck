@@ -1,0 +1,37 @@
+{
+  "utcDate": "2026-01-01",
+  "answer": "serenity",
+  "models": [
+    {
+      "modelId": "model_1",
+      "displayName": "Model 1",
+      "rankedWords": [
+        "serenity",
+        "signal",
+        "orbit",
+        "ember",
+        "velvet",
+        "prism",
+        "horizon",
+        "comet",
+        "breeze",
+        "thunder",
+        "canvas",
+        "beacon",
+        "nectar",
+        "emberglow",
+        "cedar",
+        "silver",
+        "delta",
+        "fable",
+        "harborlight",
+        "juniper",
+        "lagoon",
+        "nebula",
+        "pebble",
+        "raven",
+        "timber"
+      ]
+    }
+  ]
+}

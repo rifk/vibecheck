@@ -1,0 +1,156 @@
+package com.vibecheck.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.vibecheck.app.AppContainer
+import com.vibecheck.app.GameController
+import com.vibecheck.app.ModelUiState
+import kotlin.math.round
+
+@Composable
+fun App() {
+    val controller = remember { AppContainer.createController() }
+    var initialized by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (!initialized) {
+            initialized = true
+            controller.loadToday()
+        }
+    }
+
+    MaterialTheme {
+        GameScreen(controller)
+    }
+}
+
+@Composable
+private fun GameScreen(controller: GameController) {
+    val uiState = controller.uiState
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text("Vibe Check", style = MaterialTheme.typography.headlineSmall)
+        Text("UTC Date: ${uiState.utcDate}", style = MaterialTheme.typography.bodyMedium)
+
+        if (uiState.isLoading) {
+            CircularProgressIndicator()
+            return
+        }
+
+        if (!uiState.puzzleAvailable) {
+            Text(uiState.message ?: "No puzzle available")
+            return
+        }
+
+        Text("Model", style = MaterialTheme.typography.titleMedium)
+        ModelSelector(
+            models = uiState.availableModels,
+            selectedModelId = uiState.selectedModelId,
+            onSelect = controller::onModelSelected
+        )
+
+        OutlinedTextField(
+            value = uiState.guessInput,
+            onValueChange = controller::onGuessChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Guess a word") },
+            enabled = !uiState.solved
+        )
+
+        Button(onClick = controller::submitGuess, enabled = !uiState.solved && uiState.guessInput.isNotBlank()) {
+            Text("Submit")
+        }
+
+        if (uiState.solved) {
+            Text("Solved by model: ${uiState.solvedByModelId}")
+        }
+
+        uiState.message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+
+        StatsCard(
+            totalWins = uiState.stats.totalWins,
+            currentStreak = uiState.stats.currentStreak,
+            maxStreak = uiState.stats.maxStreak,
+            averages = uiState.stats.averageGuessesByModel
+        )
+
+        Text("Guesses", style = MaterialTheme.typography.titleMedium)
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            items(uiState.guesses) { guess ->
+                Text("${guess.guess} -> #${guess.rank}")
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModelSelector(
+    models: List<ModelUiState>,
+    selectedModelId: String?,
+    onSelect: (String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        models.forEach { model ->
+            val label = buildString {
+                append(model.displayName)
+                if (model.modelId == selectedModelId) append(" (selected)")
+                if (model.locked) append(" (locked)")
+            }
+            Button(onClick = { onSelect(model.modelId) }, enabled = !model.locked) {
+                Text(label)
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatsCard(
+    totalWins: Int,
+    currentStreak: Int,
+    maxStreak: Int,
+    averages: Map<String, Double>
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Stats", style = MaterialTheme.typography.titleMedium)
+            Text("Wins: $totalWins")
+            Text("Current streak: $currentStreak")
+            Text("Max streak: $maxStreak")
+
+            if (averages.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("Average guesses per model")
+                averages.forEach { (modelId, avg) ->
+                    val rounded = round(avg * 100.0) / 100.0
+                    Text("$modelId: $rounded")
+                }
+            }
+        }
+    }
+}
