@@ -20,12 +20,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.vibecheck.app.AppContainer
 import com.vibecheck.app.GameController
 import com.vibecheck.app.ModelUiState
+import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import kotlin.math.round
 
 @Composable
@@ -48,6 +51,9 @@ fun App() {
 @Composable
 private fun GameScreen(controller: GameController) {
     val uiState = controller.uiState
+    val coroutineScope = rememberCoroutineScope()
+    var dateInput by remember(uiState.utcDate) { mutableStateOf(uiState.utcDate) }
+    var dateInputError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -57,6 +63,33 @@ private fun GameScreen(controller: GameController) {
     ) {
         Text("Vibe Check", style = MaterialTheme.typography.headlineSmall)
         Text("UTC Date: ${uiState.utcDate}", style = MaterialTheme.typography.bodyMedium)
+
+        OutlinedTextField(
+            value = dateInput,
+            onValueChange = { dateInput = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Load UTC date (YYYY-MM-DD)") },
+            enabled = !uiState.isLoading
+        )
+
+        Button(
+            onClick = {
+                val parsedDate = runCatching { LocalDate.parse(dateInput.trim()) }.getOrNull()
+                if (parsedDate == null) {
+                    dateInputError = "Enter a valid UTC date in YYYY-MM-DD format."
+                } else {
+                    dateInputError = null
+                    coroutineScope.launch {
+                        controller.loadDate(parsedDate)
+                    }
+                }
+            },
+            enabled = !uiState.isLoading
+        ) {
+            Text("Load Date")
+        }
+
+        dateInputError?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
 
         if (uiState.isLoading) {
             CircularProgressIndicator()

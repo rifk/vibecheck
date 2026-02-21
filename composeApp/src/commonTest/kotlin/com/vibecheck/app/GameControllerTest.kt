@@ -97,6 +97,33 @@ class GameControllerTest {
         controller.onModelSelected("m1")
         assertEquals(1, controller.uiState.guesses.size)
     }
+
+    @Test
+    fun missingDate_showsUnavailableState_andCanRecoverByLoadingAvailableDate() = runTest {
+        val availableDate = LocalDate.parse("2026-01-04")
+        val missingDate = LocalDate.parse("2026-01-05")
+        val puzzle = DayPuzzle(
+            utcDate = availableDate.toString(),
+            answer = "harbor",
+            models = listOf(
+                ModelPuzzle("m1", "Model 1", listOf("harbor", "port", "dock"))
+            )
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(availableDate to puzzle)),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(availableDate)
+        )
+
+        controller.loadDate(missingDate)
+        assertFalse(controller.uiState.puzzleAvailable)
+        assertTrue(controller.uiState.message?.contains("No puzzle is available") == true)
+
+        controller.loadDate(availableDate)
+        assertTrue(controller.uiState.puzzleAvailable)
+        assertEquals("2026-01-04", controller.uiState.utcDate)
+    }
 }
 
 private class FakePuzzleSource(
