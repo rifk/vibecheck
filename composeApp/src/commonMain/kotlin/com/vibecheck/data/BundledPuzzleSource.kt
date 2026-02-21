@@ -6,8 +6,7 @@ import com.vibecheck.model.ModelPuzzle
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.readBytes
+import vibe_check.composeapp.generated.resources.Res
 
 class BundledPuzzleSource(
     private val json: Json = Json { ignoreUnknownKeys = true }
@@ -20,10 +19,9 @@ class BundledPuzzleSource(
         return dto.toDomain()
     }
 
-    @OptIn(ExperimentalResourceApi::class)
     private suspend fun readPuzzleJsonForDate(utcDate: LocalDate): String? {
         val resourcePath = "files/puzzles/${utcDate}.json"
-        val bytes = runCatching { readBytes(resourcePath) }.getOrNull() ?: return null
+        val bytes = runCatching { Res.readBytes(resourcePath) }.getOrNull() ?: return null
         return bytes.decodeToString()
     }
 }

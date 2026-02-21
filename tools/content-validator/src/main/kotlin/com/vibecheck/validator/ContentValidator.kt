@@ -19,7 +19,7 @@ class ContentValidator(
                 .filter { Files.isRegularFile(it) }
                 .filter { it.extension == "json" }
                 .sorted()
-                .forEach { collected += it }
+                .forEach { collected.add(it) }
             collected
         }
 
