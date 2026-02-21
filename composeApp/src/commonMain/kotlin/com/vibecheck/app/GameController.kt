@@ -47,7 +47,24 @@ class GameController(
     suspend fun loadDate(date: LocalDate) {
         uiState = uiState.copy(isLoading = true, message = null)
 
-        val puzzle = puzzleSource.getPuzzle(date)
+        val puzzle = runCatching { puzzleSource.getPuzzle(date) }
+            .getOrElse {
+                currentPuzzle = null
+                currentDayState = null
+                currentDate = date
+                uiState = uiState.copy(
+                    isLoading = false,
+                    puzzleAvailable = false,
+                    utcDate = date.toString(),
+                    availableModels = emptyList(),
+                    selectedModelId = null,
+                    guesses = emptyList(),
+                    solved = false,
+                    guessInput = "",
+                    message = "Failed to load puzzle data for this UTC date."
+                )
+                return
+            }
         if (puzzle == null) {
             currentPuzzle = null
             currentDayState = null

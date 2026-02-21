@@ -10,6 +10,35 @@ interface GameStateStore {
     fun saveState(state: PersistedAppState)
 }
 
+class InMemoryGameStateStore(
+    initialState: PersistedAppState = PersistedAppState()
+) : GameStateStore {
+    private var state: PersistedAppState = initialState
+
+    override fun loadState(): PersistedAppState = state
+
+    override fun saveState(state: PersistedAppState) {
+        this.state = state
+    }
+}
+
+class SafeGameStateStore(
+    private val primary: GameStateStore,
+    private val fallback: GameStateStore = InMemoryGameStateStore()
+) : GameStateStore {
+    override fun loadState(): PersistedAppState {
+        return runCatching { primary.loadState() }
+            .getOrElse { fallback.loadState() }
+    }
+
+    override fun saveState(state: PersistedAppState) {
+        runCatching { primary.saveState(state) }
+            .onFailure {
+                fallback.saveState(state)
+            }
+    }
+}
+
 class SettingsGameStateStore(
     private val settings: Settings,
     private val json: Json = Json {

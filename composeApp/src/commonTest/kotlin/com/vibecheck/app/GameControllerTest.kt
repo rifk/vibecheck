@@ -162,6 +162,22 @@ class GameControllerTest {
     }
 
     @Test
+    fun sourceFailure_showsLoadErrorState_insteadOfThrowing() = runTest {
+        val date = LocalDate.parse("2026-01-06")
+        val controller = GameController(
+            puzzleSource = ThrowingPuzzleSource(),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(date)
+        )
+
+        controller.loadToday()
+
+        assertFalse(controller.uiState.puzzleAvailable)
+        assertEquals("2026-01-06", controller.uiState.utcDate)
+        assertTrue(controller.uiState.message?.contains("Failed to load puzzle data") == true)
+    }
+
+    @Test
     fun relativeNavigation_movesAcrossUtcDays() = runTest {
         val day1 = LocalDate.parse("2026-01-10")
         val day2 = LocalDate.parse("2026-01-11")
@@ -333,6 +349,12 @@ private class FakePuzzleSource(
     private val puzzles: Map<LocalDate, DayPuzzle>
 ) : PuzzleSource {
     override suspend fun getPuzzle(utcDate: LocalDate): DayPuzzle? = puzzles[utcDate]
+}
+
+private class ThrowingPuzzleSource : PuzzleSource {
+    override suspend fun getPuzzle(utcDate: LocalDate): DayPuzzle? {
+        error("boom")
+    }
 }
 
 private class InMemoryStore : GameStateStore {
