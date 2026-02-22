@@ -9,6 +9,7 @@ local.properties
 out/
 
 # Kotlin/JS and Wasm caches
+.kotlin/
 kotlin-js-store/
 composeApp/src/commonMain/composeResources/files/puzzles/*.json
 
