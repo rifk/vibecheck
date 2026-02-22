@@ -69,9 +69,6 @@ object GameEngine {
         if (puzzle.models.none { it.modelId == modelId }) {
             return state
         }
-        if (state.solved && state.solvedByModelId != modelId) {
-            return state
-        }
         return state.copy(selectedModelId = modelId)
     }
 

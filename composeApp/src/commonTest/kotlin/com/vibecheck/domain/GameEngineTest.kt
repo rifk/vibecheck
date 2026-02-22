@@ -195,4 +195,31 @@ class GameEngineTest {
         assertEquals("m2", state.solvedByModelId)
         assertEquals("m2", state.selectedModelId)
     }
+
+    @Test
+    fun solvedDay_canSwitchToAnotherModelWithoutAffectingSolveState() {
+        val puzzle = DayPuzzle(
+            utcDate = "2026-02-01",
+            answer = "signal",
+            models = listOf(
+                ModelPuzzle("m1", "M1", listOf("signal", "noise")),
+                ModelPuzzle("m2", "M2", listOf("signal", "tone"))
+            )
+        )
+        val solvedState = DayPlayState(
+            utcDate = puzzle.utcDate,
+            selectedModelId = "m1",
+            solved = true,
+            solvedByModelId = "m1",
+            guessesByModel = mapOf(
+                "m1" to listOf(GuessOutcome("signal", 1))
+            )
+        )
+
+        val switched = GameEngine.selectModel(solvedState, puzzle, "m2")
+
+        assertEquals("m2", switched.selectedModelId)
+        assertTrue(switched.solved)
+        assertEquals("m1", switched.solvedByModelId)
+    }
 }

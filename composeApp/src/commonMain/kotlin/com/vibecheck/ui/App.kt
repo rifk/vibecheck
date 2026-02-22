@@ -188,7 +188,6 @@ private fun ModelSelector(
             val label = buildString {
                 append(model.displayName)
                 if (model.modelId == selectedModelId) append(" (selected)")
-                if (model.locked) append(" (locked)")
                 append(" | guesses: ${model.attempts}")
                 model.bestRank?.let { append(" | best: #$it") }
             }

@@ -41,7 +41,7 @@ class GameControllerTest {
     }
 
     @Test
-    fun solveLocksOtherModels_forThatDay() = runTest {
+    fun solvedDay_allowsSwitchingToOtherModelsForBrowsing() = runTest {
         val date = LocalDate.parse("2026-01-02")
         val puzzle = DayPuzzle(
             utcDate = date.toString(),
@@ -65,7 +65,41 @@ class GameControllerTest {
         assertTrue(controller.uiState.solved)
         assertEquals("signal", controller.uiState.solvedAnswer)
         controller.onModelSelected("m2")
-        assertEquals("m1", controller.uiState.selectedModelId)
+        assertEquals("m2", controller.uiState.selectedModelId)
+    }
+
+    @Test
+    fun solvedDay_rejectsNewGuessesAfterSwitchingModels() = runTest {
+        val date = LocalDate.parse("2026-01-24")
+        val puzzle = DayPuzzle(
+            utcDate = date.toString(),
+            answer = "signal",
+            models = listOf(
+                ModelPuzzle("m1", "Model 1", listOf("signal", "noise")),
+                ModelPuzzle("m2", "Model 2", listOf("signal", "tone", "hum"))
+            )
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(date to puzzle)),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(date)
+        )
+
+        controller.loadToday()
+        controller.onGuessChanged("signal")
+        controller.submitGuess()
+
+        controller.onModelSelected("m2")
+        assertEquals("m2", controller.uiState.selectedModelId)
+        assertEquals(0, controller.uiState.guesses.size)
+
+        controller.onGuessChanged("tone")
+        controller.submitGuess()
+
+        assertEquals("This day is already solved.", controller.uiState.message)
+        assertEquals("m2", controller.uiState.selectedModelId)
+        assertEquals(0, controller.uiState.guesses.size)
     }
 
     @Test

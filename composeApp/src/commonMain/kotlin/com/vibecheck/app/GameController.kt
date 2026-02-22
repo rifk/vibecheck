@@ -107,11 +107,6 @@ class GameController(
         val puzzle = currentPuzzle ?: return
         val state = currentDayState ?: return
 
-        if (state.solved && state.solvedByModelId != modelId) {
-            uiState = buildUiState(message = "This day is already solved. Other models are locked.")
-            return
-        }
-
         val updated = GameEngine.selectModel(state, puzzle, modelId)
         currentDayState = updated
         persistCurrentDay(updated)
@@ -187,7 +182,7 @@ class GameController(
                 displayName = model.displayName,
                 attempts = modelGuesses.size,
                 bestRank = modelGuesses.minOfOrNull { it.rank },
-                locked = state.solved && state.solvedByModelId != model.modelId
+                locked = false
             )
         }
 
