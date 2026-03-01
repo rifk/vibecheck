@@ -43,3 +43,19 @@ Prune behavior:
 - keep only models that contain the final answer
 
 The command writes a machine-readable JSON report with removed words, removed models, deleted days, and answer replacements.
+
+## Create or update word-of-day list
+
+This creates/updates a file containing only the #1 word per day (no full puzzle content).
+
+```bash
+python3 tools/lexicon-generator/word_of_day_generator.py \
+  --words-file content/lexicon/common_words_20k.txt \
+  --output content/lexicon/word_of_day.json \
+  --start-date 2026-04-01 \
+  --days 90 \
+  --seed 42
+```
+
+- By default, existing dates are preserved.
+- Add `--overwrite-existing` to regenerate words for dates already present in the file.
