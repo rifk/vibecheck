@@ -56,8 +56,12 @@ python3 tools/lexicon-generator/word_of_day_generator.py \
   --output content/lexicon/word_of_day.json \
   --start-date 2026-04-01 \
   --days 90 \
-  --seed 42
+  --seed 42 \
+  --common-bias 1.5
 ```
 
 - By default, existing dates are preserved.
 - Add `--overwrite-existing` to regenerate words for dates already present in the file.
+- `--common-bias` slightly favors earlier (more common) words from `common_words_20k.txt` while still being random.
+  - `1.0` means uniform random.
+  - Values above `1.0` increase common-word preference.

@@ -51,19 +51,29 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Replace already assigned words in the target date range.",
     )
+    parser.add_argument(
+        "--common-bias",
+        type=float,
+        default=1.5,
+        help=(
+            "Bias toward earlier (more common) words in the 20k list. "
+            "1.0 = uniform, higher values increase common-word preference."
+        ),
+    )
     return parser.parse_args()
 
 
 def load_words(words_file: Path) -> List[str]:
     words = []
+    seen = set()
     for line in words_file.read_text(encoding="utf-8").splitlines():
         word = line.strip().lower()
-        if WORD_RE.fullmatch(word):
+        if WORD_RE.fullmatch(word) and word not in seen:
             words.append(word)
-    deduped = sorted(set(words))
-    if not deduped:
+            seen.add(word)
+    if not words:
         raise SystemExit(f"No valid words found in {words_file}")
-    return deduped
+    return words
 
 
 def load_existing_entries(output_file: Path) -> Dict[str, str]:
@@ -83,10 +93,35 @@ def load_existing_entries(output_file: Path) -> Dict[str, str]:
     return cleaned
 
 
+def weighted_pick_unique(
+    words_in_rank_order: List[str],
+    used_words: set[str],
+    rng: random.Random,
+    common_bias: float,
+) -> str:
+    available_words = [word for word in words_in_rank_order if word not in used_words]
+    if not available_words:
+        raise SystemExit("No available words remain to pick from.")
+
+    if common_bias <= 1.0:
+        return rng.choice(available_words)
+
+    # Slightly prefer earlier (more common) words while still allowing tail selection.
+    weights = []
+    total = len(available_words)
+    for index, _word in enumerate(available_words):
+        normalized_rank = index / max(1, total - 1)  # 0 = most common, 1 = least common
+        weight = 1.0 + (common_bias - 1.0) * (1.0 - normalized_rank)
+        weights.append(weight)
+    return rng.choices(available_words, weights=weights, k=1)[0]
+
+
 def main() -> int:
     args = parse_args()
     if args.days <= 0:
         raise SystemExit("--days must be > 0")
+    if args.common_bias <= 0:
+        raise SystemExit("--common-bias must be > 0")
 
     words_file = Path(args.words_file)
     output_file = Path(args.output)
@@ -130,8 +165,12 @@ def main() -> int:
         )
 
     for date_key in editable_dates:
-        available_words = [word for word in words if word not in used_words]
-        chosen = rng.choice(available_words)
+        chosen = weighted_pick_unique(
+            words_in_rank_order=words,
+            used_words=used_words,
+            rng=rng,
+            common_bias=args.common_bias,
+        )
         existing_entries[date_key] = chosen
         used_words.add(chosen)
 
@@ -140,6 +179,7 @@ def main() -> int:
         "generatedAtUtc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "sourceWordsFile": str(words_file),
         "entryCount": len(existing_entries),
+        "commonBias": args.common_bias,
         "entries": dict(sorted(existing_entries.items())),
     }
     output_file.write_text(json.dumps(result, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
