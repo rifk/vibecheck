@@ -12,7 +12,12 @@ out/
 .kotlin/
 kotlin-js-store/
 composeApp/src/commonMain/composeResources/files/puzzles/*.json
+composeApp/src/commonMain/composeResources/files/lexicon/
 
 # IntelliJ
 *.ipr
 *.iws
+
+# Local NLP/Python artifacts
+.nltk_data/
+**/__pycache__/
