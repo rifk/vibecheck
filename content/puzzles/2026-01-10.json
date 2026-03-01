@@ -10,12 +10,10 @@
         "canvas",
         "beacon",
         "nectar",
-        "emberglow",
         "cedar",
         "silver",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",
@@ -23,7 +21,6 @@
         "raven",
         "timber",
         "valley",
-        "xenial",
         "zephyr",
         "binary",
         "daisy",
@@ -43,7 +40,6 @@
         "ripple",
         "silver",
         "echo",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -70,7 +66,6 @@
       "rankedWords": [
         "prism",
         "beacon",
-        "emberglow",
         "silver",
         "fable",
         "juniper",
@@ -88,11 +83,8 @@
         "grove",
         "kindle",
         "orchard",
-        "starlit",
-        "wonderlore",
         "bramble",
-        "foxglove",
-        "jubilant"
+        "foxglove"
       ]
     }
   ]

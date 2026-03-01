@@ -25,7 +25,6 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral",
         "elm",
@@ -44,7 +43,6 @@
         "ripple",
         "silver",
         "echo",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -84,15 +82,11 @@
         "magnet",
         "quiver",
         "umber",
-        "zenith",
-        "dune",
         "hollow",
         "lumen",
         "prairie",
         "tundra",
-        "yearling",
-        "citrine",
-        "gilded"
+        "yearling"
       ]
     }
   ]

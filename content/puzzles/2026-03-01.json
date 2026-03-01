@@ -9,9 +9,7 @@
         "forest",
         "pinecone",
         "rainstorm",
-        "topaz",
         "varnish",
-        "serenity",
         "anchor",
         "rhythm",
         "harbor",
@@ -39,7 +37,6 @@
       "rankedWords": [
         "forest",
         "quicksand",
-        "topaz",
         "westward",
         "anchor",
         "ember",
@@ -52,7 +49,6 @@
         "ripple",
         "silver",
         "echo",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -90,8 +86,6 @@
         "magnet",
         "quiver",
         "umber",
-        "zenith",
-        "dune",
         "hollow"
       ]
     }

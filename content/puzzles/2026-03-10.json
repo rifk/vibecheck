@@ -28,7 +28,6 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral"
       ]
@@ -46,7 +45,6 @@
         "ripple",
         "silver",
         "echo",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -79,20 +77,16 @@
         "monsoon",
         "quartz",
         "upland",
-        "yonder",
         "coral",
         "glacier",
-        "kelp",
         "spruce",
         "walnut",
         "blush",
         "feather",
         "journey",
-        "noonday",
         "refuge",
         "verdict",
-        "aurora",
-        "evermore"
+        "aurora"
       ]
     }
   ]

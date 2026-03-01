@@ -1,7 +1,18 @@
 {
-  "generatedAtUtc": "bootstrap-local",
-  "source": "bootstrap-from-current-puzzles",
+  "generatedAtUtc": "2026-03-01T17:08:56.291755+00:00",
+  "targetCanonicalCount": 20000,
+  "candidateCount": 200000,
   "tokenRegex": "^[a-z]{2,}$",
-  "canonicalCount": 127,
-  "note": "Install dependencies and run tools/lexicon-generator/lexicon_generator.py generate to produce full 20k list."
+  "source": {
+    "frequency": "wordfreq",
+    "lemmatizer": "nltk.wordnet"
+  },
+  "files": {
+    "common_words_20k": "content/lexicon/common_words_20k.txt",
+    "lemma_map": "content/lexicon/lemma_map.json"
+  },
+  "hashes": {
+    "canonicalWordsSha256": "822b4916ed6147827c75fc431f47300a7a60d4aa33295d4eb9c10446e3a5ba4a",
+    "lemmaMapSha256": "6265603b4b86310da1fd2f99781b04eb8033dc5172c7027df9b34a68e09e1c7a"
+  }
 }

@@ -17,20 +17,17 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral",
         "elm",
         "glacier",
         "island",
-        "kelp",
         "magnet",
         "olive",
         "quiver",
         "spruce",
         "umber",
-        "walnut",
-        "zenith"
+        "walnut"
       ]
     },
     {
@@ -44,7 +41,6 @@
         "opal",
         "raven",
         "upland",
-        "xenial",
         "atlas",
         "daisy",
         "glacier",
@@ -53,7 +49,6 @@
         "pollen",
         "spruce",
         "voyage",
-        "zenith",
         "cinder",
         "feather",
         "ignite",
@@ -80,18 +75,12 @@
         "magnet",
         "quiver",
         "umber",
-        "zenith",
-        "dune",
         "hollow",
         "lumen",
         "prairie",
         "tundra",
         "yearling",
-        "citrine",
-        "gilded",
         "kingfisher",
-        "overcast",
-        "seafront",
         "westward"
       ]
     }

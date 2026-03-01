@@ -14,12 +14,10 @@
         "canvas",
         "beacon",
         "nectar",
-        "emberglow",
         "cedar",
         "silver",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",
@@ -27,7 +25,6 @@
         "raven",
         "timber",
         "valley",
-        "xenial",
         "zephyr",
         "binary",
         "daisy"
@@ -51,7 +48,6 @@
         "opal",
         "raven",
         "upland",
-        "xenial",
         "atlas",
         "daisy",
         "glacier",
@@ -60,7 +56,6 @@
         "pollen",
         "spruce",
         "voyage",
-        "zenith",
         "cinder"
       ]
     },
@@ -72,7 +67,6 @@
         "comet",
         "thunder",
         "beacon",
-        "emberglow",
         "silver",
         "fable",
         "juniper",
@@ -90,8 +84,6 @@
         "grove",
         "kindle",
         "orchard",
-        "starlit",
-        "wonderlore",
         "bramble"
       ]
     }

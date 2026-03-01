@@ -24,13 +24,11 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral",
         "elm",
         "glacier",
-        "island",
-        "kelp"
+        "island"
       ]
     },
     {
@@ -40,7 +38,6 @@
         "spruce",
         "canvas",
         "marble",
-        "emberglow",
         "granite",
         "delta",
         "garden",
@@ -49,17 +46,13 @@
         "pebble",
         "sunset",
         "valley",
-        "yonder",
         "binary",
         "elm",
         "helix",
-        "kelp",
-        "northon",
         "quiver",
         "tether",
         "walnut",
         "amber",
-        "dune",
         "grove",
         "journey"
       ]
@@ -77,22 +70,16 @@
         "monsoon",
         "quartz",
         "upland",
-        "yonder",
         "coral",
         "glacier",
-        "kelp",
         "olive",
         "walnut",
         "blush",
         "feather",
         "journey",
-        "noonday",
         "refuge",
         "verdict",
-        "aurora",
-        "evermore",
-        "ironwood",
-        "moonrise"
+        "aurora"
       ]
     }
   ]

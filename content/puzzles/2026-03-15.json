@@ -23,13 +23,11 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral",
         "elm",
         "glacier",
         "island",
-        "kelp",
         "magnet"
       ]
     },
@@ -48,7 +46,6 @@
         "opal",
         "raven",
         "upland",
-        "xenial",
         "atlas",
         "daisy",
         "glacier",
@@ -57,7 +54,6 @@
         "pollen",
         "spruce",
         "voyage",
-        "zenith",
         "cinder",
         "feather",
         "ignite",
@@ -83,15 +79,11 @@
         "magnet",
         "quiver",
         "umber",
-        "zenith",
-        "dune",
         "hollow",
         "lumen",
         "prairie",
         "tundra",
         "yearling",
-        "citrine",
-        "gilded",
         "kingfisher"
       ]
     }

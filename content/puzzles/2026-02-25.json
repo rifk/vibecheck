@@ -8,14 +8,10 @@
       "rankedWords": [
         "binary",
         "hickory",
-        "jubilant",
         "limestone",
-        "nightfall",
         "pinecone",
         "rainstorm",
-        "topaz",
         "varnish",
-        "serenity",
         "anchor",
         "rhythm",
         "harbor",
@@ -38,12 +34,8 @@
       "displayName": "Model 2",
       "rankedWords": [
         "binary",
-        "ironwood",
         "limestone",
-        "overcast",
         "rainstorm",
-        "undertow",
-        "serenity",
         "orbit",
         "harbor",
         "prism",
@@ -60,7 +52,6 @@
         "opal",
         "raven",
         "upland",
-        "xenial",
         "atlas"
       ]
     },
@@ -69,8 +60,6 @@
       "displayName": "Model 3",
       "rankedWords": [
         "binary",
-        "jubilant",
-        "nightfall",
         "rainstorm",
         "varnish",
         "anchor",
@@ -91,8 +80,7 @@
         "island",
         "magnet",
         "quiver",
-        "umber",
-        "zenith"
+        "umber"
       ]
     }
   ]

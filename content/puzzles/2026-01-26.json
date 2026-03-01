@@ -1,13 +1,11 @@
 {
   "utcDate": "2026-01-26",
-  "answer": "emberglow",
+  "answer": "zephyr",
   "models": [
     {
       "modelId": "model_1",
       "displayName": "Model 1",
       "rankedWords": [
-        "emberglow",
-        "xenial",
         "zephyr",
         "binary",
         "daisy",
@@ -15,7 +13,6 @@
         "helix",
         "jasmine",
         "lotus",
-        "northon",
         "pollen",
         "rocket",
         "tether",
@@ -28,47 +25,13 @@
         "ignite",
         "kindle",
         "mosaic",
-        "orchard",
-        "questor",
-        "starlit"
-      ]
-    },
-    {
-      "modelId": "model_2",
-      "displayName": "Model 2",
-      "rankedWords": [
-        "emberglow",
-        "yonder",
-        "binary",
-        "elm",
-        "helix",
-        "kelp",
-        "northon",
-        "quiver",
-        "tether",
-        "walnut",
-        "amber",
-        "dune",
-        "grove",
-        "journey",
-        "mosaic",
-        "prairie",
-        "starlit",
-        "verdict",
-        "zinnia",
-        "citrine",
-        "foxglove",
-        "ironwood",
-        "limestone",
-        "overcast",
-        "rainstorm"
+        "orchard"
       ]
     },
     {
       "modelId": "model_3",
       "displayName": "Model 3",
       "rankedWords": [
-        "emberglow",
         "zephyr",
         "daisy",
         "helix",
@@ -80,12 +43,8 @@
         "grove",
         "kindle",
         "orchard",
-        "starlit",
-        "wonderlore",
         "bramble",
         "foxglove",
-        "jubilant",
-        "nightfall",
         "rainstorm",
         "varnish",
         "anchor",

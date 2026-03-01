@@ -17,20 +17,17 @@
         "canvas",
         "beacon",
         "nectar",
-        "emberglow",
         "cedar",
         "silver",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",
         "pebble",
         "raven",
         "timber",
-        "valley",
-        "xenial"
+        "valley"
       ]
     },
     {
@@ -53,7 +50,6 @@
         "opal",
         "raven",
         "upland",
-        "xenial",
         "atlas",
         "daisy",
         "glacier",
@@ -76,22 +72,18 @@
         "nectar",
         "cedar",
         "delta",
-        "harborlight",
         "lagoon",
         "pebble",
         "timber",
-        "xenial",
         "binary",
         "forest",
         "jasmine",
-        "northon",
         "rocket",
         "voyage",
         "amber",
         "estuary",
         "ignite",
         "mosaic",
-        "questor",
         "unity"
       ]
     }

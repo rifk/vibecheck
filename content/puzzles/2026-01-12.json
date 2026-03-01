@@ -8,12 +8,10 @@
       "rankedWords": [
         "horizon",
         "nectar",
-        "emberglow",
         "cedar",
         "silver",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",
@@ -21,7 +19,6 @@
         "raven",
         "timber",
         "valley",
-        "xenial",
         "zephyr",
         "binary",
         "daisy",
@@ -29,7 +26,6 @@
         "helix",
         "jasmine",
         "lotus",
-        "northon",
         "pollen"
       ]
     },
@@ -47,7 +43,6 @@
         "opal",
         "raven",
         "upland",
-        "xenial",
         "atlas",
         "daisy",
         "glacier",
@@ -56,7 +51,6 @@
         "pollen",
         "spruce",
         "voyage",
-        "zenith",
         "cinder",
         "feather",
         "ignite",
@@ -69,7 +63,6 @@
       "displayName": "Model 3",
       "rankedWords": [
         "horizon",
-        "emberglow",
         "silver",
         "fable",
         "juniper",
@@ -87,12 +80,8 @@
         "grove",
         "kindle",
         "orchard",
-        "starlit",
-        "wonderlore",
         "bramble",
-        "foxglove",
-        "jubilant",
-        "nightfall"
+        "foxglove"
       ]
     }
   ]

@@ -21,13 +21,11 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral",
         "elm",
         "glacier",
         "island",
-        "kelp",
         "magnet",
         "olive",
         "quiver"
@@ -38,7 +36,6 @@
       "displayName": "Model 2",
       "rankedWords": [
         "voyage",
-        "emberglow",
         "granite",
         "delta",
         "garden",
@@ -47,17 +44,13 @@
         "pebble",
         "sunset",
         "valley",
-        "yonder",
         "binary",
         "elm",
         "helix",
-        "kelp",
-        "northon",
         "quiver",
         "tether",
         "walnut",
         "amber",
-        "dune",
         "grove",
         "journey",
         "mosaic",
@@ -82,17 +75,12 @@
         "magnet",
         "quiver",
         "umber",
-        "zenith",
-        "dune",
         "hollow",
         "lumen",
         "prairie",
         "tundra",
         "yearling",
-        "citrine",
-        "gilded",
-        "kingfisher",
-        "overcast"
+        "kingfisher"
       ]
     }
   ]

@@ -16,12 +16,10 @@
         "canvas",
         "beacon",
         "nectar",
-        "emberglow",
         "cedar",
         "silver",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",
@@ -29,7 +27,6 @@
         "raven",
         "timber",
         "valley",
-        "xenial",
         "zephyr"
       ]
     },
@@ -47,7 +44,6 @@
         "ripple",
         "silver",
         "echo",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -73,7 +69,6 @@
         "comet",
         "thunder",
         "beacon",
-        "emberglow",
         "silver",
         "fable",
         "juniper",
@@ -90,9 +85,7 @@
         "cinder",
         "grove",
         "kindle",
-        "orchard",
-        "starlit",
-        "wonderlore"
+        "orchard"
       ]
     }
   ]

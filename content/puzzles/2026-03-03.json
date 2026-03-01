@@ -7,9 +7,7 @@
       "displayName": "Model 1",
       "rankedWords": [
         "helix",
-        "topaz",
         "varnish",
-        "serenity",
         "anchor",
         "rhythm",
         "harbor",
@@ -38,8 +36,6 @@
       "displayName": "Model 2",
       "rankedWords": [
         "helix",
-        "undertow",
-        "serenity",
         "orbit",
         "harbor",
         "prism",
@@ -56,7 +52,6 @@
         "opal",
         "raven",
         "upland",
-        "xenial",
         "atlas",
         "daisy",
         "glacier",
@@ -89,8 +84,6 @@
         "magnet",
         "quiver",
         "umber",
-        "zenith",
-        "dune",
         "hollow",
         "lumen"
       ]

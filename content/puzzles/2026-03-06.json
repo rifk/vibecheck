@@ -1,12 +1,11 @@
 {
   "utcDate": "2026-03-06",
-  "answer": "kelp",
+  "answer": "anchor",
   "models": [
     {
       "modelId": "model_1",
       "displayName": "Model 1",
       "rankedWords": [
-        "kelp",
         "anchor",
         "rhythm",
         "harbor",
@@ -31,68 +30,6 @@
         "quartz",
         "sunset",
         "upland"
-      ]
-    },
-    {
-      "modelId": "model_2",
-      "displayName": "Model 2",
-      "rankedWords": [
-        "kelp",
-        "orbit",
-        "harbor",
-        "prism",
-        "lantern",
-        "breeze",
-        "whisper",
-        "beacon",
-        "oasis",
-        "cedar",
-        "canyon",
-        "fable",
-        "ivory",
-        "lagoon",
-        "opal",
-        "raven",
-        "upland",
-        "xenial",
-        "atlas",
-        "daisy",
-        "glacier",
-        "jasmine",
-        "magnet",
-        "pollen",
-        "spruce"
-      ]
-    },
-    {
-      "modelId": "model_3",
-      "displayName": "Model 3",
-      "rankedWords": [
-        "kelp",
-        "rhythm",
-        "summit",
-        "lantern",
-        "willow",
-        "solder",
-        "oasis",
-        "granite",
-        "echo",
-        "ivory",
-        "monsoon",
-        "quartz",
-        "upland",
-        "yonder",
-        "coral",
-        "glacier",
-        "olive",
-        "spruce",
-        "walnut",
-        "blush",
-        "feather",
-        "journey",
-        "noonday",
-        "refuge",
-        "verdict"
       ]
     }
   ]

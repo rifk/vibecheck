@@ -1,12 +1,11 @@
 {
   "utcDate": "2026-01-01",
-  "answer": "serenity",
+  "answer": "signal",
   "models": [
     {
       "modelId": "model_1",
       "displayName": "Model 1",
       "rankedWords": [
-        "serenity",
         "signal",
         "orbit",
         "ember",
@@ -19,12 +18,10 @@
         "canvas",
         "beacon",
         "nectar",
-        "emberglow",
         "cedar",
         "silver",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",

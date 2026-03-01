@@ -22,13 +22,11 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral",
         "elm",
         "glacier",
         "island",
-        "kelp",
         "magnet",
         "olive"
       ]
@@ -42,7 +40,6 @@
         "ripple",
         "silver",
         "echo",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -59,9 +56,7 @@
         "blush",
         "estuary",
         "hollow",
-        "kindle",
-        "noonday",
-        "questor"
+        "kindle"
       ]
     },
     {
@@ -76,23 +71,17 @@
         "monsoon",
         "quartz",
         "upland",
-        "yonder",
         "coral",
         "glacier",
-        "kelp",
         "olive",
         "spruce",
         "walnut",
         "blush",
         "feather",
         "journey",
-        "noonday",
         "refuge",
         "verdict",
-        "aurora",
-        "evermore",
-        "ironwood",
-        "moonrise"
+        "aurora"
       ]
     }
   ]

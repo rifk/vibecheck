@@ -1,12 +1,11 @@
 {
   "utcDate": "2026-03-09",
-  "answer": "northon",
+  "answer": "summit",
   "models": [
     {
       "modelId": "model_1",
       "displayName": "Model 1",
       "rankedWords": [
-        "northon",
         "summit",
         "meadow",
         "lantern",
@@ -29,70 +28,7 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas"
-      ]
-    },
-    {
-      "modelId": "model_2",
-      "displayName": "Model 2",
-      "rankedWords": [
-        "northon",
-        "prism",
-        "lantern",
-        "breeze",
-        "whisper",
-        "beacon",
-        "oasis",
-        "cedar",
-        "canyon",
-        "fable",
-        "ivory",
-        "lagoon",
-        "opal",
-        "raven",
-        "upland",
-        "xenial",
-        "atlas",
-        "daisy",
-        "glacier",
-        "jasmine",
-        "magnet",
-        "pollen",
-        "spruce",
-        "voyage",
-        "zenith"
-      ]
-    },
-    {
-      "modelId": "model_3",
-      "displayName": "Model 3",
-      "rankedWords": [
-        "northon",
-        "meadow",
-        "drift",
-        "whisper",
-        "marble",
-        "ripple",
-        "canyon",
-        "garden",
-        "keystone",
-        "opal",
-        "sunset",
-        "wander",
-        "atlas",
-        "elm",
-        "island",
-        "magnet",
-        "quiver",
-        "umber",
-        "zenith",
-        "dune",
-        "hollow",
-        "lumen",
-        "prairie",
-        "tundra",
-        "yearling"
       ]
     }
   ]

@@ -9,7 +9,6 @@
         "breeze",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",
@@ -17,7 +16,6 @@
         "raven",
         "timber",
         "valley",
-        "xenial",
         "zephyr",
         "binary",
         "daisy",
@@ -25,7 +23,6 @@
         "helix",
         "jasmine",
         "lotus",
-        "northon",
         "pollen",
         "rocket",
         "tether",
@@ -39,7 +36,6 @@
       "rankedWords": [
         "breeze",
         "echo",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -58,10 +54,7 @@
         "estuary",
         "hollow",
         "kindle",
-        "noonday",
-        "questor",
-        "tundra",
-        "wonderlore"
+        "tundra"
       ]
     },
     {
@@ -85,12 +78,8 @@
         "grove",
         "kindle",
         "orchard",
-        "starlit",
-        "wonderlore",
         "bramble",
         "foxglove",
-        "jubilant",
-        "nightfall",
         "rainstorm",
         "varnish"
       ]

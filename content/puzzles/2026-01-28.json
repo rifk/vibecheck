@@ -13,7 +13,6 @@
         "helix",
         "jasmine",
         "lotus",
-        "northon",
         "pollen",
         "rocket",
         "tether",
@@ -27,10 +26,7 @@
         "kindle",
         "mosaic",
         "orchard",
-        "questor",
-        "starlit",
-        "unity",
-        "wonderlore"
+        "unity"
       ]
     },
     {
@@ -50,17 +46,10 @@
         "estuary",
         "hollow",
         "kindle",
-        "noonday",
-        "questor",
         "tundra",
-        "wonderlore",
         "aurora",
         "dogwood",
-        "gilded",
-        "jubilant",
-        "moonrise",
         "pinecone",
-        "seafront",
         "varnish"
       ]
     },
@@ -79,12 +68,8 @@
         "grove",
         "kindle",
         "orchard",
-        "starlit",
-        "wonderlore",
         "bramble",
         "foxglove",
-        "jubilant",
-        "nightfall",
         "rainstorm",
         "varnish",
         "anchor",

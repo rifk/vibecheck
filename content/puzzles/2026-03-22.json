@@ -16,21 +16,17 @@
         "sunset",
         "upland",
         "wander",
-        "yonder",
         "atlas",
         "coral",
         "elm",
         "glacier",
         "island",
-        "kelp",
         "magnet",
         "olive",
         "quiver",
         "spruce",
         "umber",
-        "walnut",
-        "zenith",
-        "dune"
+        "walnut"
       ]
     },
     {
@@ -38,7 +34,6 @@
       "displayName": "Model 2",
       "rankedWords": [
         "blush",
-        "harborlight",
         "keystone",
         "nebula",
         "quartz",
@@ -56,10 +51,7 @@
         "estuary",
         "hollow",
         "kindle",
-        "noonday",
-        "questor",
         "tundra",
-        "wonderlore",
         "aurora",
         "dogwood"
       ]
@@ -73,24 +65,17 @@
         "monsoon",
         "quartz",
         "upland",
-        "yonder",
         "coral",
         "glacier",
-        "kelp",
         "olive",
         "spruce",
         "walnut",
         "feather",
         "journey",
-        "noonday",
         "refuge",
         "verdict",
         "aurora",
-        "evermore",
-        "ironwood",
-        "moonrise",
         "quicksand",
-        "undertow",
         "signal",
         "ember"
       ]

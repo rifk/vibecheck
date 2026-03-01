@@ -11,7 +11,6 @@
         "silver",
         "delta",
         "fable",
-        "harborlight",
         "juniper",
         "lagoon",
         "nebula",
@@ -19,7 +18,6 @@
         "raven",
         "timber",
         "valley",
-        "xenial",
         "zephyr",
         "binary",
         "daisy",
@@ -27,7 +25,6 @@
         "helix",
         "jasmine",
         "lotus",
-        "northon",
         "pollen",
         "rocket",
         "tether"
@@ -46,22 +43,17 @@
         "pebble",
         "sunset",
         "valley",
-        "yonder",
         "binary",
         "elm",
         "helix",
-        "kelp",
-        "northon",
         "quiver",
         "tether",
         "walnut",
         "amber",
-        "dune",
         "grove",
         "journey",
         "mosaic",
-        "prairie",
-        "starlit"
+        "prairie"
       ]
     },
     {
@@ -86,12 +78,8 @@
         "grove",
         "kindle",
         "orchard",
-        "starlit",
-        "wonderlore",
         "bramble",
         "foxglove",
-        "jubilant",
-        "nightfall",
         "rainstorm"
       ]
     }
