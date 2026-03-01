@@ -8,9 +8,11 @@ fun main(args: Array<String>) {
     val directory = args.getOrNull(0) ?: "content/puzzles"
     val expectedStartDate = args.getOrNull(1)?.let(LocalDate::parse)
     val expectedDayCount = args.getOrNull(2)?.toIntOrNull() ?: 90
+    val canonicalWordList = args.getOrNull(3) ?: "content/lexicon/common_words_20k.txt"
     val validator = ContentValidator(
         expectedDayCount = expectedDayCount,
-        expectedStartDate = expectedStartDate
+        expectedStartDate = expectedStartDate,
+        canonicalWordListPath = Path.of(canonicalWordList)
     )
     val result = validator.validateDirectory(Path.of(directory))
 

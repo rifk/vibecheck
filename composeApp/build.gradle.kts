@@ -114,8 +114,14 @@ val syncPuzzleContent by tasks.registering(Sync::class) {
     into(layout.projectDirectory.dir("src/commonMain/composeResources/files/puzzles"))
 }
 
+val syncLexiconContent by tasks.registering(Sync::class) {
+    from(rootProject.layout.projectDirectory.dir("content/lexicon"))
+    into(layout.projectDirectory.dir("src/commonMain/composeResources/files/lexicon"))
+}
+
 tasks.matching {
     it.name.startsWith("compile") || it.name.startsWith("process") || it.name.contains("Resources")
 }.configureEach {
     dependsOn(syncPuzzleContent)
+    dependsOn(syncLexiconContent)
 }

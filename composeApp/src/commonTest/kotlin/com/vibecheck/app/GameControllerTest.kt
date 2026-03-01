@@ -2,6 +2,7 @@ package com.vibecheck.app
 
 import com.vibecheck.data.GameStateStore
 import com.vibecheck.data.PuzzleSource
+import com.vibecheck.domain.GuessLexicon
 import com.vibecheck.domain.UtcDateProvider
 import com.vibecheck.model.DayPuzzle
 import com.vibecheck.model.ModelPuzzle
@@ -377,6 +378,59 @@ class GameControllerTest {
         assertEquals("2026-01-23", recent[0].utcDate)
         assertEquals("2026-01-22", recent[1].utcDate)
     }
+
+    @Test
+    fun lemmaMappedGuess_isAcceptedAsCanonicalWord() = runTest {
+        val day = LocalDate.parse("2026-01-25")
+        val puzzle = DayPuzzle(
+            utcDate = day.toString(),
+            answer = "run",
+            models = listOf(
+                ModelPuzzle("m1", "Model 1", listOf("run", "jog"))
+            )
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(day to puzzle)),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(day),
+            guessLexicon = FakeGuessLexicon(mapOf("running" to "run"))
+        )
+
+        controller.loadToday()
+        controller.onGuessChanged("running")
+        controller.submitGuess()
+
+        assertTrue(controller.uiState.solved)
+        assertEquals("run", controller.uiState.guesses.first().guess)
+    }
+
+    @Test
+    fun lemmaVariant_isRejectedAsDuplicateWhenCanonicalAlreadyGuessed() = runTest {
+        val day = LocalDate.parse("2026-01-26")
+        val puzzle = DayPuzzle(
+            utcDate = day.toString(),
+            answer = "anchor",
+            models = listOf(
+                ModelPuzzle("m1", "Model 1", listOf("anchor", "run", "jog", "sprint"))
+            )
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(day to puzzle)),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(day),
+            guessLexicon = FakeGuessLexicon(mapOf("running" to "run"))
+        )
+
+        controller.loadToday()
+        controller.onGuessChanged("run")
+        controller.submitGuess()
+        controller.onGuessChanged("running")
+        controller.submitGuess()
+
+        assertEquals("You've already guessed that word.", controller.uiState.message)
+    }
 }
 
 private class FakePuzzleSource(
@@ -405,4 +459,10 @@ private class FixedDateProvider(
     private val date: LocalDate
 ) : UtcDateProvider {
     override fun currentDate(): LocalDate = date
+}
+
+private class FakeGuessLexicon(
+    private val mapping: Map<String, String>
+) : GuessLexicon {
+    override fun canonicalize(input: String): String? = mapping[input]
 }

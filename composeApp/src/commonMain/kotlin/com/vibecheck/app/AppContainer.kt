@@ -2,6 +2,7 @@ package com.vibecheck.app
 
 import com.russhwolf.settings.Settings
 import com.vibecheck.data.CachingPuzzleSource
+import com.vibecheck.data.BundledGuessLexicon
 import com.vibecheck.data.InMemoryGameStateStore
 import com.vibecheck.data.PuzzleSourceFactory
 import com.vibecheck.data.SafeGameStateStore
@@ -20,7 +21,8 @@ object AppContainer {
         return GameController(
             puzzleSource = source,
             gameStateStore = store,
-            utcDateProvider = SystemUtcDateProvider
+            utcDateProvider = SystemUtcDateProvider,
+            guessLexicon = BundledGuessLexicon()
         )
     }
 }

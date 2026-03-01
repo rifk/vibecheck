@@ -12,6 +12,8 @@ import kotlinx.serialization.json.Json
 class ContentValidator(
     private val expectedDayCount: Int = 90,
     private val expectedStartDate: LocalDate? = null,
+    private val canonicalWordListPath: Path? = null,
+    private val canonicalWords: Set<String>? = null,
     private val json: Json = Json { ignoreUnknownKeys = true }
 ) {
     fun validateDirectory(contentDirectory: Path): ValidationResult {
@@ -30,10 +32,15 @@ class ContentValidator(
             errors += "Expected $expectedDayCount puzzle files, found ${files.size}."
         }
 
+        val canonicalLookup = loadCanonicalWords()
+        if (canonicalLookup.isEmpty()) {
+            errors += "Canonical lexicon is empty or missing. Provide a valid common words file."
+        }
+
         val seenDates = mutableSetOf<String>()
         val parsedDates = mutableSetOf<LocalDate>()
         files.forEach { file ->
-            val fileErrors = validateFile(file, seenDates, parsedDates)
+            val fileErrors = validateFile(file, seenDates, parsedDates, canonicalLookup)
             errors += fileErrors
         }
 
@@ -47,7 +54,8 @@ class ContentValidator(
     private fun validateFile(
         file: Path,
         seenDates: MutableSet<String>,
-        parsedDates: MutableSet<LocalDate>
+        parsedDates: MutableSet<LocalDate>,
+        canonicalLookup: Set<String>
     ): List<String> {
         val errors = mutableListOf<String>()
         val payload = runCatching { file.inputStream().bufferedReader().readText() }
@@ -61,7 +69,9 @@ class ContentValidator(
             }
 
         if (!WordRules.isNormalizedEnglishWord(dayPuzzle.answer)) {
-            errors += "${file.name}: answer must be lowercase English letters and trimmed."
+            errors += "${file.name}: answer must be lowercase alphabetic (a-z), min 2 chars, and trimmed."
+        } else if (dayPuzzle.answer !in canonicalLookup) {
+            errors += "${file.name}: answer '${dayPuzzle.answer}' must exist in canonical lexicon."
         }
 
         if (dayPuzzle.models.isEmpty()) {
@@ -108,7 +118,9 @@ class ContentValidator(
 
             model.rankedWords.forEachIndexed { wordIndex, word ->
                 if (!WordRules.isNormalizedEnglishWord(word)) {
-                    errors += "$modelPrefix rankedWords[$wordIndex] must be lowercase English letters and trimmed."
+                    errors += "$modelPrefix rankedWords[$wordIndex] must be lowercase alphabetic (a-z), min 2 chars, and trimmed."
+                } else if (word !in canonicalLookup) {
+                    errors += "$modelPrefix rankedWords[$wordIndex] '$word' must exist in canonical lexicon."
                 }
             }
 
@@ -150,6 +162,24 @@ class ContentValidator(
         val preview = dates.take(5).joinToString(", ")
         return if (dates.size > 5) "$preview ... (${dates.size} total)" else preview
     }
+
+    private fun loadCanonicalWords(): Set<String> {
+        val direct = canonicalWords
+        if (direct != null) return direct
+
+        val path = canonicalWordListPath
+            ?: return emptySet()
+        if (!Files.exists(path)) return emptySet()
+
+        return runCatching {
+            path.inputStream().bufferedReader().useLines { lines ->
+                lines
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() && WordRules.isNormalizedEnglishWord(it) }
+                    .toSet()
+            }
+        }.getOrDefault(emptySet())
+    }
 }
 
 data class ValidationResult(
@@ -173,7 +203,7 @@ data class ModelPuzzleFile(
 )
 
 private object WordRules {
-    private val regex = Regex("^[a-z]+(?:'[a-z]+)?$")
+    private val regex = Regex("^[a-z]{2,}$")
 
     fun normalize(word: String): String = word.trim().lowercase()
 

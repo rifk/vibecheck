@@ -20,7 +20,9 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 
 - `composeApp`: shared KMP app and UI.
 - `tools/content-validator`: JVM CLI to validate puzzle content.
+- `tools/lexicon-generator`: Python CLI to build canonical lexicon, lemma map, and prune puzzle content.
 - `content/puzzles`: v1 source-of-truth puzzle files.
+- `content/lexicon`: canonical word list and lemma map consumed at runtime and validation time.
 - `docs/puzzle-schema.md`: schema and rules.
 
 ## Build and test

@@ -10,6 +10,19 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ContentValidatorTest {
+    private val canonicalWords = setOf(
+        "serenity",
+        "signal",
+        "noise",
+        "tone",
+        "anchor",
+        "chain",
+        "dock",
+        "port",
+        "boat",
+        "calm"
+    )
+
     @Test
     fun emptyModels_areRejected() {
         val dir = createTempPuzzleDir()
@@ -23,7 +36,10 @@ class ContentValidatorTest {
             """.trimIndent()
         )
 
-        val result = ContentValidator(expectedDayCount = 1).validateDirectory(dir)
+        val result = ContentValidator(
+            expectedDayCount = 1,
+            canonicalWords = canonicalWords
+        ).validateDirectory(dir)
 
         assertFalse(result.isValid)
         assertTrue(result.errors.any { it.contains("models must contain at least one model") })
@@ -66,7 +82,8 @@ class ContentValidatorTest {
 
         val result = ContentValidator(
             expectedDayCount = 2,
-            expectedStartDate = LocalDate.parse("2026-01-01")
+            expectedStartDate = LocalDate.parse("2026-01-01"),
+            canonicalWords = canonicalWords
         ).validateDirectory(dir)
 
         assertTrue(result.isValid)
@@ -87,7 +104,10 @@ class ContentValidatorTest {
             """.trimIndent()
         )
 
-        val result = ContentValidator(expectedDayCount = 90).validateDirectory(dir)
+        val result = ContentValidator(
+            expectedDayCount = 90,
+            canonicalWords = canonicalWords
+        ).validateDirectory(dir)
 
         assertFalse(result.isValid)
         assertTrue(result.errors.any { it.contains("Expected 90 puzzle files") })
@@ -123,12 +143,37 @@ class ContentValidatorTest {
 
         val result = ContentValidator(
             expectedDayCount = 2,
-            expectedStartDate = LocalDate.parse("2026-01-01")
+            expectedStartDate = LocalDate.parse("2026-01-01"),
+            canonicalWords = canonicalWords
         ).validateDirectory(dir)
 
         assertFalse(result.isValid)
         assertTrue(result.errors.any { it.contains("Missing puzzle dates in expected window") })
         assertTrue(result.errors.any { it.contains("outside expected window") })
+    }
+
+    @Test
+    fun rejectsWordsOutsideCanonicalLexicon() {
+        val dir = createTempPuzzleDir()
+        dir.resolve("2026-01-01.json").writeText(
+            """
+            {
+              "utcDate": "2026-01-01",
+              "answer": "serenity",
+              "models": [
+                {"modelId": "a", "displayName": "A", "rankedWords": ["serenity", "foobar"]}
+              ]
+            }
+            """.trimIndent()
+        )
+
+        val result = ContentValidator(
+            expectedDayCount = 1,
+            canonicalWords = canonicalWords
+        ).validateDirectory(dir)
+
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("must exist in canonical lexicon") })
     }
 
     private fun createTempPuzzleDir(): Path {

@@ -1,0 +1,7 @@
+{
+  "generatedAtUtc": "bootstrap-local",
+  "source": "bootstrap-from-current-puzzles",
+  "tokenRegex": "^[a-z]{2,}$",
+  "canonicalCount": 127,
+  "note": "Install dependencies and run tools/lexicon-generator/lexicon_generator.py generate to produce full 20k list."
+}

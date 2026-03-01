@@ -1,7 +1,7 @@
 package com.vibecheck.domain
 
 object WordRules {
-    private val validEnglishWordRegex = Regex("^[a-z]+(?:'[a-z]+)?$")
+    private val validEnglishWordRegex = Regex("^[a-z]{2,}$")
 
     fun normalize(word: String): String = word.trim().lowercase()
 

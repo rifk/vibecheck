@@ -6,9 +6,13 @@ import androidx.compose.runtime.setValue
 import com.vibecheck.data.GameStateStore
 import com.vibecheck.data.PuzzleSource
 import com.vibecheck.domain.GameEngine
+import com.vibecheck.domain.GuessLexicon
 import com.vibecheck.domain.GuessFailureReason
 import com.vibecheck.domain.GuessSubmissionResult
+import com.vibecheck.domain.LoadableGuessLexicon
+import com.vibecheck.domain.NoOpGuessLexicon
 import com.vibecheck.domain.UtcDateProvider
+import com.vibecheck.domain.WordRules
 import com.vibecheck.model.DayPlayState
 import com.vibecheck.model.DayPuzzle
 import com.vibecheck.model.GuessOutcome
@@ -20,7 +24,8 @@ import kotlinx.datetime.plus
 class GameController(
     private val puzzleSource: PuzzleSource,
     private val gameStateStore: GameStateStore,
-    private val utcDateProvider: UtcDateProvider
+    private val utcDateProvider: UtcDateProvider,
+    private val guessLexicon: GuessLexicon = NoOpGuessLexicon
 ) {
     var uiState by mutableStateOf(GameUiState())
         private set
@@ -45,6 +50,10 @@ class GameController(
     }
 
     suspend fun loadDate(date: LocalDate) {
+        if (guessLexicon is LoadableGuessLexicon) {
+            guessLexicon.ensureLoaded()
+        }
+
         uiState = uiState.copy(isLoading = true, message = null)
 
         val puzzle = runCatching { puzzleSource.getPuzzle(date) }
@@ -117,7 +126,16 @@ class GameController(
         val puzzle = currentPuzzle ?: return
         val state = currentDayState ?: return
 
-        val result = GameEngine.submitGuess(state, puzzle, uiState.guessInput)
+        val normalizedGuess = WordRules.normalize(uiState.guessInput)
+        val dayWordSet = puzzle.models.asSequence()
+            .flatMap { it.rankedWords.asSequence() }
+            .toSet()
+        val canonicalGuess = when {
+            normalizedGuess in dayWordSet -> normalizedGuess
+            else -> guessLexicon.canonicalize(normalizedGuess) ?: normalizedGuess
+        }
+
+        val result = GameEngine.submitGuess(state, puzzle, canonicalGuess)
         when (result) {
             is GuessSubmissionResult.Rejected -> {
                 uiState = buildUiState(message = rejectionMessage(result.reason))
