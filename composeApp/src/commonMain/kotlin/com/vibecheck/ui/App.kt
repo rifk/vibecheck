@@ -20,6 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -41,6 +42,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import com.vibecheck.app.AppContainer
 import com.vibecheck.app.GameController
@@ -356,6 +358,11 @@ private fun GameplaySection(
 ) {
     val spacing = VibeCheckThemeTokens.spacing
     val sizes = VibeCheckThemeTokens.sizes
+    val selectedModelName = uiState.availableModels
+        .firstOrNull { it.modelId == uiState.selectedModelId }
+        ?.displayName
+        ?: uiState.selectedModelId
+        ?: "Unknown model"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -411,31 +418,31 @@ private fun GameplaySection(
             }
 
             if (uiState.solved) {
+                val solvedByName = uiState.availableModels
+                    .firstOrNull { it.modelId == uiState.solvedByModelId }
+                    ?.displayName
+                    ?: uiState.solvedByModelId
+                    ?: "Unknown model"
+                val solvedAnswer = uiState.solvedAnswer ?: "Unknown"
                 Text(
-                    "Status: Solved by ${uiState.solvedByModelId}",
+                    "Answer: $solvedAnswer - Solved by $solvedByName",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                uiState.solvedAnswer?.let { answer ->
-                    Text("Answer: $answer", style = MaterialTheme.typography.bodyLarge)
-                }
             }
 
             uiState.message?.let { message ->
                 Text(
-                    text = "Update: $message",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f)
                 )
             }
 
             Text(
-                "Attempts (selected model): ${uiState.guessCountForSelectedModel}",
+                "Attempts ($selectedModelName): ${uiState.guessCountForSelectedModel}",
                 style = MaterialTheme.typography.bodyMedium
             )
-            uiState.bestRankForSelectedModel?.let { bestRank ->
-                Text("Best rank so far: #$bestRank", style = MaterialTheme.typography.bodyMedium)
-            }
 
             GuessHistorySection(uiState)
         }
@@ -456,8 +463,12 @@ private fun ModelSelector(
             val selected = model.modelId == selectedModelId
             val label = buildString {
                 append(model.displayName)
-                append("  ${model.attempts} tries")
-                model.bestRank?.let { append("  best #$it") }
+                append(" | ")
+                append("${model.attempts} tries")
+                model.bestRank?.let {
+                    append(" | ")
+                    append("best #$it")
+                }
             }
 
             FilterChip(
@@ -468,12 +479,7 @@ private fun ModelSelector(
                 onClick = { onSelect(model.modelId) },
                 enabled = !model.locked,
                 label = {
-                    val statePrefix = when {
-                        model.locked -> "Unavailable"
-                        selected -> "Selected"
-                        else -> "Available"
-                    }
-                    Text("$statePrefix: $label")
+                    Text(label)
                 }
             )
         }
@@ -529,6 +535,8 @@ private fun StatsCard(uiState: GameUiState) {
 @Composable
 private fun GuessHistorySection(uiState: GameUiState) {
     val spacing = VibeCheckThemeTokens.spacing
+    val lastGuess = uiState.guesses.lastOrNull()
+    val bestFirstGuesses = uiState.guesses.sortedBy { it.rank }
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
         Text("Guess History", style = MaterialTheme.typography.titleMedium)
@@ -539,8 +547,16 @@ private fun GuessHistorySection(uiState: GameUiState) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
-            uiState.guesses.forEachIndexed { index, guess ->
-                Text("${index + 1}. ${guess.guess} -> #${guess.rank}")
+            lastGuess?.let { guess ->
+                Text(
+                    "Last guess: #${guess.rank} ${guess.guess}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            HorizontalDivider()
+            bestFirstGuesses.forEach { guess ->
+                Text("#${guess.rank}  ${guess.guess}")
             }
         }
     }
