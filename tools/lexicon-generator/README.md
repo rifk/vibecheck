@@ -23,6 +23,8 @@ Outputs:
 - `content/lexicon/lemma_map.json`
 - `content/lexicon/lexicon_metadata.json`
 
+Canonicalization behavior includes a past-tense rule: words ending in `ed` are canonicalized to a base verb form when available (for example, `abandoned -> abandon`), so inflected past-tense forms go into `lemma_map.json` instead of the canonical 20k list.
+
 ## Prune puzzle content to canonical list
 
 ```bash

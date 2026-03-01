@@ -81,7 +81,22 @@ def canonical_candidate(
     token: str,
     lemma_candidates_fn: Callable[[str], set[str]],
     zipf_frequency,
+    lemmatizer: object | None = None,
 ) -> str:
+    # Force common past-tense forms to canonicalize to their base verb when possible.
+    if token.endswith("ed"):
+        if lemmatizer is not None:
+            preferred = normalize_token(lemmatizer.lemmatize(token, pos="v"))
+            if is_valid_token(preferred) and preferred != token:
+                return preferred
+        else:
+            heuristic_forms = sorted(
+                (form for form in heuristic_lemma_candidates(token) if form != token),
+                key=lambda form: (len(form), form),
+            )
+            if heuristic_forms:
+                return heuristic_forms[0]
+
     lemmas = lemma_candidates_fn(token)
 
     if len(lemmas) == 1:
@@ -150,7 +165,12 @@ def generate_lexicon(args: argparse.Namespace) -> int:
     form_to_canonical: Dict[str, str] = {}
 
     for token in candidates:
-        canonical = canonical_candidate(token, lemma_candidates_fn, zipf_frequency)
+        canonical = canonical_candidate(
+            token=token,
+            lemma_candidates_fn=lemma_candidates_fn,
+            zipf_frequency=zipf_frequency,
+            lemmatizer=lemmatizer,
+        )
         form_to_canonical[token] = canonical
         canonical_score[canonical] += zipf_frequency(token, "en")
 
@@ -194,6 +214,9 @@ def generate_lexicon(args: argparse.Namespace) -> int:
         "source": {
             "frequency": "wordfreq",
             "lemmatizer": "nltk.wordnet" if lemmatizer is not None else "heuristic-fallback",
+        },
+        "canonicalizationRules": {
+            "pastTenseEdPrefersVerbLemma": True,
         },
         "files": {
             "common_words_20k": str(words_path),
