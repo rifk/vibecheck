@@ -12,11 +12,12 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Callable, Dict, Iterable, List, Sequence, Tuple
 
 TOKEN_RE = re.compile(r"^[a-z]{2,}$")
 WORDNET_POS = ("n", "v", "a", "r")
@@ -40,40 +41,48 @@ def load_canonical_words(path: Path) -> List[str]:
     return words
 
 
-def require_modules() -> Tuple[object, object, object]:
+def require_wordfreq_modules() -> Tuple[object, object]:
     try:
-        import nltk
-        from nltk.stem import WordNetLemmatizer
         from wordfreq import top_n_list, zipf_frequency
     except ImportError as exc:  # pragma: no cover - runtime dependency guard
         raise SystemExit(
             "Missing dependency: install with `pip install -r tools/lexicon-generator/requirements.txt`"
         ) from exc
+    return top_n_list, zipf_frequency
+
+
+def build_wordnet_lemmatizer() -> object | None:
+    try:
+        import nltk
+        from nltk.stem import WordNetLemmatizer
+    except ImportError:
+        return None
+
+    project_nltk_dir = Path(os.getenv("NLTK_DATA", ".nltk_data")).resolve()
+    project_nltk_dir.mkdir(parents=True, exist_ok=True)
+
+    project_nltk_str = str(project_nltk_dir)
+    if project_nltk_str not in nltk.data.path:
+        nltk.data.path.insert(0, project_nltk_str)
 
     try:
         nltk.data.find("corpora/wordnet")
     except LookupError:
-        nltk.download("wordnet", quiet=True)
+        nltk.download("wordnet", quiet=True, download_dir=project_nltk_str, raise_on_error=False)
+        nltk.download("omw-1.4", quiet=True, download_dir=project_nltk_str, raise_on_error=False)
         try:
             nltk.data.find("corpora/wordnet")
-        except LookupError as exc:
-            raise SystemExit(
-                "WordNet corpus is missing. Run `python3 -m nltk.downloader wordnet` and retry."
-            ) from exc
-
-    return WordNetLemmatizer, top_n_list, zipf_frequency
+        except LookupError:
+            return None
+    return WordNetLemmatizer()
 
 
 def canonical_candidate(
     token: str,
-    lemmatizer: object,
+    lemma_candidates_fn: Callable[[str], set[str]],
     zipf_frequency,
 ) -> str:
-    lemmas = {token}
-    for pos in WORDNET_POS:
-        lemma = normalize_token(lemmatizer.lemmatize(token, pos=pos))
-        if is_valid_token(lemma):
-            lemmas.add(lemma)
+    lemmas = lemma_candidates_fn(token)
 
     if len(lemmas) == 1:
         return token
@@ -87,9 +96,49 @@ def canonical_candidate(
     return scored[0][1]
 
 
+def heuristic_lemma_candidates(token: str) -> set[str]:
+    forms = {token}
+    if len(token) > 4 and token.endswith("ies"):
+        forms.add(token[:-3] + "y")
+    if len(token) > 4 and token.endswith("ing"):
+        forms.add(token[:-3])
+        if len(token) > 5 and token[-4] == token[-5]:
+            forms.add(token[:-4])
+    if len(token) > 3 and token.endswith("ed"):
+        forms.add(token[:-2])
+    if len(token) > 3 and token.endswith("es"):
+        forms.add(token[:-2])
+    if len(token) > 2 and token.endswith("s"):
+        forms.add(token[:-1])
+    return {form for form in forms if is_valid_token(form)}
+
+
+def make_lemma_candidates_fn(lemmatizer: object | None) -> Callable[[str], set[str]]:
+    if lemmatizer is None:
+        return heuristic_lemma_candidates
+
+    def from_wordnet(token: str) -> set[str]:
+        lemmas = {token}
+        for pos in WORDNET_POS:
+            lemma = normalize_token(lemmatizer.lemmatize(token, pos=pos))
+            if is_valid_token(lemma):
+                lemmas.add(lemma)
+        return lemmas
+
+    return from_wordnet
+
+
 def generate_lexicon(args: argparse.Namespace) -> int:
-    WordNetLemmatizer, top_n_list, zipf_frequency = require_modules()
-    lemmatizer = WordNetLemmatizer()
+    top_n_list, zipf_frequency = require_wordfreq_modules()
+    lemmatizer = build_wordnet_lemmatizer()
+    if lemmatizer is None:
+        if args.strict_wordnet:
+            raise SystemExit(
+                "WordNet corpus is missing and --strict-wordnet is set. "
+                "Install corpus or rerun without --strict-wordnet."
+            )
+        print("Warning: WordNet unavailable; using heuristic lemma fallback.", file=sys.stderr)
+    lemma_candidates_fn = make_lemma_candidates_fn(lemmatizer)
 
     candidates = [
         normalize_token(word)
@@ -101,7 +150,7 @@ def generate_lexicon(args: argparse.Namespace) -> int:
     form_to_canonical: Dict[str, str] = {}
 
     for token in candidates:
-        canonical = canonical_candidate(token, lemmatizer, zipf_frequency)
+        canonical = canonical_candidate(token, lemma_candidates_fn, zipf_frequency)
         form_to_canonical[token] = canonical
         canonical_score[canonical] += zipf_frequency(token, "en")
 
@@ -144,7 +193,7 @@ def generate_lexicon(args: argparse.Namespace) -> int:
         "tokenRegex": TOKEN_RE.pattern,
         "source": {
             "frequency": "wordfreq",
-            "lemmatizer": "nltk.wordnet",
+            "lemmatizer": "nltk.wordnet" if lemmatizer is not None else "heuristic-fallback",
         },
         "files": {
             "common_words_20k": str(words_path),
@@ -302,6 +351,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     generate.add_argument("--output-dir", default="content/lexicon")
     generate.add_argument("--target-count", type=int, default=20_000)
     generate.add_argument("--candidate-count", type=int, default=200_000)
+    generate.add_argument("--strict-wordnet", action="store_true")
     generate.set_defaults(func=generate_lexicon)
 
     prune = subparsers.add_parser("prune", help="Prune puzzle files against canonical word list")
