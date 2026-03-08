@@ -65,3 +65,76 @@ python3 tools/lexicon-generator/word_of_day_generator.py \
 - `--common-bias` slightly favors earlier (more common) words from `common_words_20k.txt` while still being random.
   - `1.0` means uniform random.
   - Values above `1.0` increase common-word preference.
+
+## Build embedding distance matrices
+
+Two scripts generate full all-pairs cosine-distance matrices for the canonical lexicon:
+
+- `embedding_matrix_sentence_transformer.py` using `google/embeddinggemma-300m`
+- `embedding_matrix_openai.py` using `text-embedding-3-small`
+
+Install dependencies:
+
+```bash
+python3 -m pip install -r tools/lexicon-generator/requirements.txt
+```
+
+### 1) SentenceTransformer matrix
+
+Build:
+
+```bash
+python3 tools/lexicon-generator/embedding_matrix_sentence_transformer.py build \
+  --words-file content/lexicon/common_words_20k.txt \
+  --output-dir content/lexicon/embeddings/sentence_transformer_embeddinggemma300m
+```
+
+Query:
+
+```bash
+python3 tools/lexicon-generator/embedding_matrix_sentence_transformer.py query \
+  --output-dir content/lexicon/embeddings/sentence_transformer_embeddinggemma300m \
+  --word apple \
+  --top-k 25
+```
+
+### 2) OpenAI matrix
+
+Build:
+
+```bash
+export OPENAI_API_KEY="your-key"
+python3 tools/lexicon-generator/embedding_matrix_openai.py build \
+  --words-file content/lexicon/common_words_20k.txt \
+  --output-dir content/lexicon/embeddings/openai_text_embedding_3_small
+```
+
+Query:
+
+```bash
+python3 tools/lexicon-generator/embedding_matrix_openai.py query \
+  --output-dir content/lexicon/embeddings/openai_text_embedding_3_small \
+  --word apple \
+  --top-k 25
+```
+
+### Artifact layout (same schema for both scripts)
+
+Each output directory contains:
+
+- `distances.f32.memmap`: float32 row-major distance matrix (`N x N`)
+- `words.json`: ordered `words` list and `wordToIndex` map
+- `metadata.json`: provider/model/metric/dtype/shape/embedding dimension and file paths
+
+Distance metric is fixed to cosine distance:
+
+- `distance = 1 - cosine_similarity`
+- query output is sorted ascending by distance (includes the query word itself at rank 1)
+
+### Useful dev options
+
+Both build commands support:
+
+- `--limit N` for tiny test runs
+- `--batch-size` for embedding batch size
+- `--distance-batch-size` for matrix computation row chunking
