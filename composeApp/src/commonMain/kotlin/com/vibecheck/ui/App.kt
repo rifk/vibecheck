@@ -3,6 +3,7 @@ package com.vibecheck.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +26,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -31,8 +34,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -405,11 +411,9 @@ private fun GameplaySection(
 ) {
     val spacing = VibeCheckThemeTokens.spacing
     val sizes = VibeCheckThemeTokens.sizes
-    val selectedModelName = uiState.availableModels
+    val selectedModel = uiState.availableModels
         .firstOrNull { it.modelId == uiState.selectedModelId }
-        ?.displayName
-        ?: uiState.selectedModelId
-        ?: "Unknown model"
+    var infoExpanded by remember(uiState.utcDate, uiState.selectedModelId) { mutableStateOf(false) }
 
     SectionCard {
         Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
@@ -420,7 +424,12 @@ private fun GameplaySection(
 
             if (isCompact) {
                 Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                    SnapshotMetric(label = "Active model", value = selectedModelName)
+                    ActiveModelMetric(
+                        model = selectedModel,
+                        expanded = infoExpanded,
+                        onToggleExpanded = { infoExpanded = !infoExpanded },
+                        onDismiss = { infoExpanded = false }
+                    )
                     SnapshotMetric(label = "Attempts", value = uiState.guessCountForSelectedModel.toString())
                     SnapshotMetric(
                         label = "Best rank",
@@ -429,9 +438,11 @@ private fun GameplaySection(
                 }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                    SnapshotMetric(
-                        label = "Active model",
-                        value = selectedModelName,
+                    ActiveModelMetric(
+                        model = selectedModel,
+                        expanded = infoExpanded,
+                        onToggleExpanded = { infoExpanded = !infoExpanded },
+                        onDismiss = { infoExpanded = false },
                         modifier = Modifier.weight(1.3f)
                     )
                     SnapshotMetric(
@@ -518,7 +529,7 @@ private fun ModelSelector(
             val selected = model.modelId == selectedModelId
             val modifier = Modifier
                 .heightIn(min = sizes.minTouchTarget)
-                .semantics { contentDescription = "Select model ${model.displayName}" }
+                .semantics { contentDescription = "Select model ${model.title}" }
 
             val summary = buildString {
                 append("${model.attempts} tries")
@@ -538,7 +549,7 @@ private fun ModelSelector(
                     )
                 ) {
                     Column(horizontalAlignment = Alignment.Start) {
-                        Text(model.displayName, style = MaterialTheme.typography.titleSmall)
+                        Text(model.title, style = MaterialTheme.typography.titleSmall)
                         Text(summary, style = MaterialTheme.typography.labelMedium)
                     }
                 }
@@ -550,7 +561,7 @@ private fun ModelSelector(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.9f))
                 ) {
                     Column(horizontalAlignment = Alignment.Start) {
-                        Text(model.displayName, style = MaterialTheme.typography.titleSmall)
+                        Text(model.title, style = MaterialTheme.typography.titleSmall)
                         Text(summary, style = MaterialTheme.typography.labelMedium)
                     }
                 }
@@ -662,7 +673,7 @@ private fun SolvedOrMessageBanner(uiState: GameUiState) {
         uiState.solved -> {
             val solvedByName = uiState.availableModels
                 .firstOrNull { it.modelId == uiState.solvedByModelId }
-                ?.displayName
+                ?.title
                 ?: uiState.solvedByModelId
                 ?: "Unknown model"
             val solvedAnswer = uiState.solvedAnswer ?: "Unknown"
@@ -808,6 +819,99 @@ private fun StatusBanner(uiState: GameUiState) {
             text = label,
             style = MaterialTheme.typography.labelLarge
         )
+    }
+}
+
+@Composable
+private fun ActiveModelMetric(
+    model: ModelUiState?,
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = VibeCheckThemeTokens.spacing
+    val title = model?.title ?: model?.modelId ?: "Unknown model"
+    val description = model?.description ?: "Description unavailable"
+    val value = "$title - $description"
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
+        ) {
+            Row(
+                modifier = Modifier.padding(spacing.md),
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xs)
+                ) {
+                    Text(
+                        "Active model",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        value,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .semantics { contentDescription = "Show active model info" }
+                        .clickable(onClick = onToggleExpanded),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    contentColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text("i", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded && model != null,
+            onDismissRequest = onDismiss
+        ) {
+            Surface(
+                modifier = Modifier.widthIn(max = 320.dp),
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
+                Column(
+                    modifier = Modifier.padding(spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(spacing.sm)
+                ) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        model?.info ?: "No model info available yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
 }
 

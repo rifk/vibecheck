@@ -12,7 +12,6 @@ data class DayPuzzle(
 @Serializable
 data class ModelPuzzle(
     val modelId: String,
-    val displayName: String,
     val rankedWords: List<String>
 ) {
     fun rankForGuess(guess: String): Int? {
@@ -21,3 +20,10 @@ data class ModelPuzzle(
         return if (rank >= 0) rank + 1 else null
     }
 }
+
+data class ModelMetadata(
+    val modelId: String,
+    val title: String,
+    val description: String,
+    val info: String
+)

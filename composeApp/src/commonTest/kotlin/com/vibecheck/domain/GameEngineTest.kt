@@ -19,7 +19,6 @@ class GameEngineTest {
             models = listOf(
                 ModelPuzzle(
                     modelId = "solo",
-                    displayName = "Solo Model",
                     rankedWords = listOf("serenity", "calm", "peace", "quiet")
                 )
             )
@@ -119,8 +118,8 @@ class GameEngineTest {
             utcDate = "2026-01-10",
             answer = "signal",
             models = listOf(
-                ModelPuzzle("m1", "M1", listOf("signal", "noise", "tone")),
-                ModelPuzzle("m2", "M2", listOf("signal", "wave", "beam"))
+                ModelPuzzle("m1", listOf("signal", "noise", "tone")),
+                ModelPuzzle("m2", listOf("signal", "wave", "beam"))
             )
         )
 
@@ -148,8 +147,8 @@ class GameEngineTest {
             utcDate = "2026-01-30",
             answer = "signal",
             models = listOf(
-                ModelPuzzle("newA", "New A", listOf("signal", "noise")),
-                ModelPuzzle("newB", "New B", listOf("signal", "tone"))
+                ModelPuzzle("newA", listOf("signal", "noise")),
+                ModelPuzzle("newB", listOf("signal", "tone"))
             )
         )
         val prior = DayPlayState(
@@ -175,8 +174,8 @@ class GameEngineTest {
             utcDate = "2026-01-31",
             answer = "harbor",
             models = listOf(
-                ModelPuzzle("m1", "M1", listOf("harbor", "port")),
-                ModelPuzzle("m2", "M2", listOf("harbor", "dock"))
+                ModelPuzzle("m1", listOf("harbor", "port")),
+                ModelPuzzle("m2", listOf("harbor", "dock"))
             )
         )
         val prior = DayPlayState(
@@ -202,8 +201,8 @@ class GameEngineTest {
             utcDate = "2026-02-01",
             answer = "signal",
             models = listOf(
-                ModelPuzzle("m1", "M1", listOf("signal", "noise")),
-                ModelPuzzle("m2", "M2", listOf("signal", "tone"))
+                ModelPuzzle("m1", listOf("signal", "noise")),
+                ModelPuzzle("m2", listOf("signal", "tone"))
             )
         )
         val solvedState = DayPlayState(

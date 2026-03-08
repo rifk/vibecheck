@@ -43,7 +43,7 @@ Key outputs:
 - `RemotePuzzleSource` and `RemotePuzzleClient` contracts for future backend integration, while runtime defaults remain bundled-only
 - Local persistence with `multiplatform-settings` for day state and basic stats
 - Stats for streaks, wins and averages by model, best guesses by model, and recent solve history
-- Shared Compose UI that renders model options dynamically from each day file
+- Shared Compose UI that renders model options dynamically from daily puzzle data plus shared model metadata
 - Per-date puzzle caching via `CachingPuzzleSource` in app composition
 - Content validator CLI in `tools/content-validator`
 - 90 bundled puzzle JSON files in `content/puzzles`
@@ -55,6 +55,7 @@ Key outputs:
 - `tools/content-validator`: JVM CLI to validate puzzle content
 - `tools/lexicon-generator`: Python CLI to build the canonical lexicon, lemma map, and prune puzzle content
 - `content/puzzles`: source-of-truth puzzle files
+- `content/models`: shared model titles, descriptions, and info copy keyed by `modelId`
 - `content/lexicon`: canonical word list and lemma map used at runtime and validation time
 - `docs/puzzle-schema.md`: schema and rules
 

@@ -41,11 +41,10 @@ private data class DayPuzzleDto(
 @Serializable
 private data class ModelPuzzleDto(
     val modelId: String,
-    val displayName: String,
     val rankedWords: List<String>
 ) {
     fun toDomain(answer: String): ModelPuzzle? {
-        if (modelId.isBlank() || displayName.isBlank() || rankedWords.isEmpty()) return null
+        if (modelId.isBlank() || rankedWords.isEmpty()) return null
 
         val normalizedWords = rankedWords.map(WordRules::normalize)
         if (normalizedWords.any { !WordRules.isValidEnglishWord(it) }) return null
@@ -54,7 +53,6 @@ private data class ModelPuzzleDto(
 
         return ModelPuzzle(
             modelId = modelId.trim(),
-            displayName = displayName.trim(),
             rankedWords = normalizedWords
         )
     }

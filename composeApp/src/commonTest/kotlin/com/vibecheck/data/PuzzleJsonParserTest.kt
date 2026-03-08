@@ -18,12 +18,10 @@ class PuzzleJsonParserTest {
               "models": [
                 {
                   "modelId": "solo",
-                  "displayName": "Solo",
                   "rankedWords": ["serenity", "calm", "peace"]
                 },
                 {
                   "modelId": "alt",
-                  "displayName": "Alt",
                   "rankedWords": ["serenity", "quiet", "still"]
                 }
               ]
@@ -64,7 +62,6 @@ class PuzzleJsonParserTest {
               "models": [
                 {
                   "modelId": "m1",
-                  "displayName": "Model 1",
                   "rankedWords": ["calm", "serenity"]
                 }
               ]

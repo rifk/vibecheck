@@ -4,7 +4,6 @@
   "models": [
     {
       "modelId": "model_1",
-      "displayName": "Model 1",
       "rankedWords": [
         "signal",
         "orbit",
@@ -33,7 +32,6 @@
     },
     {
       "modelId": "model_2",
-      "displayName": "Model 2",
       "rankedWords": [
         "signal",
         "rhythm",
@@ -60,7 +58,6 @@
     },
     {
       "modelId": "model_3",
-      "displayName": "Model 3",
       "rankedWords": [
         "signal",
         "ember",
@@ -89,7 +86,6 @@
     },
     {
       "modelId": "model_4",
-      "displayName": "Model 4",
       "rankedWords": [
         "signal",
         "harbor",
