@@ -66,9 +66,9 @@ python3 tools/lexicon-generator/word_of_day_generator.py \
   - `1.0` means uniform random.
   - Values above `1.0` increase common-word preference.
 
-## Build embedding distance matrices
+## Build embedding artifacts
 
-Two scripts generate full all-pairs cosine-distance matrices for the canonical lexicon:
+Two scripts generate normalized embedding artifacts for the canonical lexicon:
 
 - `embedding_matrix_sentence_transformer.py` using `google/embeddinggemma-300m`
 - `embedding_matrix_openai.py` using `text-embedding-3-small`
@@ -79,7 +79,7 @@ Install dependencies:
 python3 -m pip install -r tools/lexicon-generator/requirements.txt
 ```
 
-### 1) SentenceTransformer matrix
+### 1) SentenceTransformer embeddings
 
 Build:
 
@@ -98,7 +98,7 @@ python3 tools/lexicon-generator/embedding_matrix_sentence_transformer.py query \
   --top-k 25
 ```
 
-### 2) OpenAI matrix
+### 2) OpenAI embeddings
 
 Build:
 
@@ -122,11 +122,11 @@ python3 tools/lexicon-generator/embedding_matrix_openai.py query \
 
 Each output directory contains:
 
-- `distances.f32.memmap`: float32 row-major distance matrix (`N x N`)
+- `embeddings.f32.memmap`: float32 row-major normalized embeddings (`N x D`)
 - `words.json`: ordered `words` list and `wordToIndex` map
-- `metadata.json`: provider/model/metric/dtype/shape/embedding dimension and file paths
+- `metadata.json`: provider/model/metric/dtype/shape/embedding dimension, normalization, storage info, and file paths
 
-Distance metric is fixed to cosine distance:
+Stored vectors are normalized to unit length. Query distance is computed on demand as cosine distance:
 
 - `distance = 1 - cosine_similarity`
 - query output is sorted ascending by distance (includes the query word itself at rank 1)
@@ -137,4 +137,3 @@ Both build commands support:
 
 - `--limit N` for tiny test runs
 - `--batch-size` for embedding batch size
-- `--distance-batch-size` for matrix computation row chunking
