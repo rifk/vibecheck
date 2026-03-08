@@ -21,3 +21,4 @@ composeApp/src/commonMain/composeResources/files/lexicon/
 # Local NLP/Python artifacts
 .nltk_data/
 **/__pycache__/
+content/lexicon/embeddings/
