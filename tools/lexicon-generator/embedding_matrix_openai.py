@@ -23,10 +23,10 @@ from embedding_store import (
     write_words_file,
 )
 
-MODEL_ID = "text-embedding-3-small"
+MODEL_ID = "text-embedding-3-large"
 PROVIDER = "openai"
 DEFAULT_WORDS_FILE = "content/lexicon/common_words_20k.txt"
-DEFAULT_OUTPUT_DIR = "content/lexicon/embeddings/openai_text_embedding_3_small"
+DEFAULT_OUTPUT_DIR = "content/lexicon/embeddings/openai_text_embedding_3_large"
 
 
 def parse_args() -> argparse.Namespace:
