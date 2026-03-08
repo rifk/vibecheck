@@ -27,6 +27,10 @@ class GameController(
     private val utcDateProvider: UtcDateProvider,
     private val guessLexicon: GuessLexicon = NoOpGuessLexicon
 ) {
+    private companion object {
+        const val FUTURE_PUZZLE_MESSAGE = "Future puzzles are not available yet."
+    }
+
     var uiState by mutableStateOf(GameUiState())
         private set
 
@@ -56,6 +60,11 @@ class GameController(
 
         uiState = uiState.copy(isLoading = true, message = null)
 
+        if (date > utcDateProvider.currentDate()) {
+            uiState = buildUiState(message = FUTURE_PUZZLE_MESSAGE)
+            return
+        }
+
         val puzzle = runCatching { puzzleSource.getPuzzle(date) }
             .getOrElse {
                 currentPuzzle = null
@@ -65,6 +74,7 @@ class GameController(
                     isLoading = false,
                     puzzleAvailable = false,
                     utcDate = date.toString(),
+                    canLoadNext = date < utcDateProvider.currentDate(),
                     availableModels = emptyList(),
                     selectedModelId = null,
                     guesses = emptyList(),
@@ -82,6 +92,7 @@ class GameController(
                 isLoading = false,
                 puzzleAvailable = false,
                 utcDate = date.toString(),
+                canLoadNext = date < utcDateProvider.currentDate(),
                 availableModels = emptyList(),
                 selectedModelId = null,
                 guesses = emptyList(),
@@ -189,6 +200,7 @@ class GameController(
                 isLoading = false,
                 puzzleAvailable = false,
                 solvedAnswer = null,
+                canLoadNext = currentDate?.let { it < utcDateProvider.currentDate() } ?: false,
                 message = message
             )
         }
@@ -206,11 +218,19 @@ class GameController(
 
         val guesses = state.guessesByModel[state.selectedModelId].orEmpty()
         val bestRank = guesses.minOfOrNull { it.rank }
+        val solveHistory = persistedState.stats.solveHistoryByDate.values
+        val averageGuesses = if (solveHistory.isEmpty()) {
+            null
+        } else {
+            solveHistory.sumOf { it.guessesToSolve }.toDouble() / solveHistory.size.toDouble()
+        }
+        val lowestGuesses = solveHistory.minOfOrNull { it.guessesToSolve }
 
         return GameUiState(
             isLoading = false,
             puzzleAvailable = true,
             utcDate = puzzle.utcDate,
+            canLoadNext = currentDate?.let { it < utcDateProvider.currentDate() } ?: false,
             availableModels = models,
             selectedModelId = state.selectedModelId,
             guesses = guesses,
@@ -223,22 +243,8 @@ class GameController(
             bestRankForSelectedModel = bestRank,
             stats = StatsUiState(
                 totalWins = persistedState.stats.totalWins,
-                currentStreak = persistedState.stats.currentStreak,
-                maxStreak = persistedState.stats.maxStreak,
-                winsByModel = persistedState.stats.winsByModel,
-                averageGuessesByModel = persistedState.stats.averageGuessesByModel(),
-                bestGuessesByModel = persistedState.stats.bestGuessesByModel,
-                recentSolves = persistedState.stats.solveHistoryByDate
-                    .toList()
-                    .sortedByDescending { (date, _) -> date }
-                    .take(7)
-                    .map { (date, record) ->
-                        SolveRecordUi(
-                            utcDate = date,
-                            modelId = record.modelId,
-                            guessesToSolve = record.guessesToSolve
-                        )
-                    }
+                averageGuesses = averageGuesses,
+                lowestGuesses = lowestGuesses
             )
         )
     }
@@ -256,6 +262,7 @@ data class GameUiState(
     val isLoading: Boolean = true,
     val puzzleAvailable: Boolean = true,
     val utcDate: String = "",
+    val canLoadNext: Boolean = false,
     val availableModels: List<ModelUiState> = emptyList(),
     val selectedModelId: String? = null,
     val guesses: List<GuessOutcome> = emptyList(),
@@ -279,16 +286,6 @@ data class ModelUiState(
 
 data class StatsUiState(
     val totalWins: Int = 0,
-    val currentStreak: Int = 0,
-    val maxStreak: Int = 0,
-    val winsByModel: Map<String, Int> = emptyMap(),
-    val averageGuessesByModel: Map<String, Double> = emptyMap(),
-    val bestGuessesByModel: Map<String, Int> = emptyMap(),
-    val recentSolves: List<SolveRecordUi> = emptyList()
-)
-
-data class SolveRecordUi(
-    val utcDate: String,
-    val modelId: String,
-    val guessesToSolve: Int
+    val averageGuesses: Double? = null,
+    val lowestGuesses: Int? = null
 )

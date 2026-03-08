@@ -172,7 +172,7 @@ class GameControllerTest {
     @Test
     fun missingDate_showsUnavailableState_andCanRecoverByLoadingAvailableDate() = runTest {
         val availableDate = LocalDate.parse("2026-01-04")
-        val missingDate = LocalDate.parse("2026-01-05")
+        val missingDate = LocalDate.parse("2026-01-03")
         val puzzle = DayPuzzle(
             utcDate = availableDate.toString(),
             answer = "harbor",
@@ -248,15 +248,65 @@ class GameControllerTest {
 
         controller.loadToday()
         assertEquals("2026-01-11", controller.uiState.utcDate)
+        assertFalse(controller.uiState.canLoadNext)
 
         controller.loadPreviousDay()
         assertEquals("2026-01-10", controller.uiState.utcDate)
+        assertTrue(controller.uiState.canLoadNext)
 
         controller.loadNextDay()
         assertEquals("2026-01-11", controller.uiState.utcDate)
+        assertFalse(controller.uiState.canLoadNext)
 
         controller.loadNextDay()
-        assertEquals("2026-01-12", controller.uiState.utcDate)
+        assertEquals("2026-01-11", controller.uiState.utcDate)
+        assertTrue(controller.uiState.puzzleAvailable)
+        assertFalse(controller.uiState.canLoadNext)
+        assertEquals("Future puzzles are not available yet.", controller.uiState.message)
+    }
+
+    @Test
+    fun futureDate_isRejectedWithoutChangingCurrentPuzzle() = runTest {
+        val today = LocalDate.parse("2026-01-11")
+        val futureDate = LocalDate.parse("2026-01-12")
+        val puzzle = DayPuzzle(
+            utcDate = today.toString(),
+            answer = "signal",
+            models = listOf(ModelPuzzle("m1", "Model 1", listOf("signal", "noise")))
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(today to puzzle)),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(today)
+        )
+
+        controller.loadToday()
+        controller.loadDate(futureDate)
+
+        assertEquals("2026-01-11", controller.uiState.utcDate)
+        assertTrue(controller.uiState.puzzleAvailable)
+        assertFalse(controller.uiState.canLoadNext)
+        assertEquals("Future puzzles are not available yet.", controller.uiState.message)
+    }
+
+    @Test
+    fun futureDate_isRejectedWhenNothingHasBeenLoadedYet() = runTest {
+        val today = LocalDate.parse("2026-01-11")
+        val futureDate = LocalDate.parse("2026-01-12")
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(emptyMap()),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(today)
+        )
+
+        controller.loadDate(futureDate)
+
+        assertFalse(controller.uiState.isLoading)
+        assertFalse(controller.uiState.puzzleAvailable)
+        assertEquals("", controller.uiState.utcDate)
+        assertFalse(controller.uiState.canLoadNext)
+        assertEquals("Future puzzles are not available yet.", controller.uiState.message)
     }
 
     @Test
@@ -319,10 +369,8 @@ class GameControllerTest {
 
         assertTrue(firstController.uiState.solved)
         assertEquals(1, firstController.uiState.stats.totalWins)
-        assertEquals(2, firstController.uiState.stats.bestGuessesByModel["m1"])
-        assertEquals(1, firstController.uiState.stats.recentSolves.size)
-        assertEquals("2026-01-21", firstController.uiState.stats.recentSolves.first().utcDate)
-        assertEquals(2, firstController.uiState.stats.recentSolves.first().guessesToSolve)
+        assertEquals(2.0, firstController.uiState.stats.averageGuesses)
+        assertEquals(2, firstController.uiState.stats.lowestGuesses)
 
         val secondController = GameController(
             puzzleSource = source,
@@ -336,14 +384,12 @@ class GameControllerTest {
         assertEquals(2, secondController.uiState.guessCountForSelectedModel)
         assertEquals(1, secondController.uiState.bestRankForSelectedModel)
         assertEquals(1, secondController.uiState.stats.totalWins)
-        assertEquals(1, secondController.uiState.stats.winsByModel["m1"])
-        assertEquals(2, secondController.uiState.stats.bestGuessesByModel["m1"])
-        assertEquals(1, secondController.uiState.stats.recentSolves.size)
-        assertEquals("m1", secondController.uiState.stats.recentSolves.first().modelId)
+        assertEquals(2.0, secondController.uiState.stats.averageGuesses)
+        assertEquals(2, secondController.uiState.stats.lowestGuesses)
     }
 
     @Test
-    fun recentSolveHistory_isOrderedMostRecentFirst() = runTest {
+    fun aggregateStats_reflectWinsAverageAndLowestSolveCount() = runTest {
         val day1 = LocalDate.parse("2026-01-22")
         val day2 = LocalDate.parse("2026-01-23")
         val puzzle1 = DayPuzzle(
@@ -362,7 +408,7 @@ class GameControllerTest {
         val controller = GameController(
             puzzleSource = source,
             gameStateStore = store,
-            utcDateProvider = FixedDateProvider(day1)
+            utcDateProvider = FixedDateProvider(day2)
         )
 
         controller.loadDate(day1)
@@ -370,13 +416,14 @@ class GameControllerTest {
         controller.submitGuess()
 
         controller.loadDate(day2)
+        controller.onGuessChanged("noise")
+        controller.submitGuess()
         controller.onGuessChanged("signal")
         controller.submitGuess()
 
-        val recent = controller.uiState.stats.recentSolves
-        assertEquals(2, recent.size)
-        assertEquals("2026-01-23", recent[0].utcDate)
-        assertEquals("2026-01-22", recent[1].utcDate)
+        assertEquals(2, controller.uiState.stats.totalWins)
+        assertEquals(1.5, controller.uiState.stats.averageGuesses)
+        assertEquals(1, controller.uiState.stats.lowestGuesses)
     }
 
     @Test

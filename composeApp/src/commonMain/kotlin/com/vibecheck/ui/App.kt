@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -32,11 +31,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -61,7 +57,6 @@ import com.vibecheck.app.ModelUiState
 import com.vibecheck.ui.theme.VibeCheckTheme
 import com.vibecheck.ui.theme.VibeCheckThemeTokens
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import kotlin.math.round
 
 private enum class LayoutClass {
@@ -73,13 +68,9 @@ private enum class LayoutClass {
 @Composable
 fun App() {
     val controller = remember { AppContainer.createController() }
-    var initialized by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        if (!initialized) {
-            initialized = true
-            controller.loadToday()
-        }
+        controller.loadToday()
     }
 
     VibeCheckTheme {
@@ -93,24 +84,9 @@ private fun GameScreen(controller: GameController) {
     val coroutineScope = rememberCoroutineScope()
     val spacing = VibeCheckThemeTokens.spacing
     val sizes = VibeCheckThemeTokens.sizes
-
-    var dateInput by remember(uiState.utcDate) { mutableStateOf(uiState.utcDate) }
-    var dateInputError by remember { mutableStateOf<String?>(null) }
     val backgroundColor = MaterialTheme.colorScheme.background
     val backgroundGlow = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.32f)
     val primaryAccent = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-
-    fun loadDateFromInput() {
-        val parsedDate = runCatching { LocalDate.parse(dateInput.trim()) }.getOrNull()
-        if (parsedDate == null) {
-            dateInputError = "Enter a valid UTC date in YYYY-MM-DD format."
-        } else {
-            dateInputError = null
-            coroutineScope.launch {
-                controller.loadDate(parsedDate)
-            }
-        }
-    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(
@@ -162,14 +138,7 @@ private fun GameScreen(controller: GameController) {
                                 item {
                                     HeaderSection(
                                         uiState = uiState,
-                                        dateInput = dateInput,
-                                        dateInputError = dateInputError,
                                         isCompact = layoutClass == LayoutClass.Compact,
-                                        onDateInputChanged = {
-                                            dateInput = it
-                                            dateInputError = null
-                                        },
-                                        onLoadDate = ::loadDateFromInput,
                                         onLoadPrevious = { coroutineScope.launch { controller.loadPreviousDay() } },
                                         onLoadToday = { coroutineScope.launch { controller.loadToday() } },
                                         onLoadNext = { coroutineScope.launch { controller.loadNextDay() } }
@@ -224,14 +193,7 @@ private fun GameScreen(controller: GameController) {
                                     item {
                                         HeaderSection(
                                             uiState = uiState,
-                                            dateInput = dateInput,
-                                            dateInputError = dateInputError,
                                             isCompact = false,
-                                            onDateInputChanged = {
-                                                dateInput = it
-                                                dateInputError = null
-                                            },
-                                            onLoadDate = ::loadDateFromInput,
                                             onLoadPrevious = { coroutineScope.launch { controller.loadPreviousDay() } },
                                             onLoadToday = { coroutineScope.launch { controller.loadToday() } },
                                             onLoadNext = { coroutineScope.launch { controller.loadNextDay() } }
@@ -287,11 +249,7 @@ private fun GameScreen(controller: GameController) {
 @Composable
 private fun HeaderSection(
     uiState: GameUiState,
-    dateInput: String,
-    dateInputError: String?,
     isCompact: Boolean,
-    onDateInputChanged: (String) -> Unit,
-    onLoadDate: () -> Unit,
     onLoadPrevious: () -> Unit,
     onLoadToday: () -> Unit,
     onLoadNext: () -> Unit
@@ -307,7 +265,7 @@ private fun HeaderSection(
             if (isCompact) {
                 Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
                     HeaderIntro(uiState)
-                    DailySnapshot(uiState, isCompact = true)
+                    DailySnapshot(uiState)
                 }
             } else {
                 Row(
@@ -320,7 +278,6 @@ private fun HeaderSection(
                     }
                     DailySnapshot(
                         uiState = uiState,
-                        isCompact = false,
                         modifier = Modifier.weight(0.9f)
                     )
                 }
@@ -328,7 +285,7 @@ private fun HeaderSection(
 
             Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
                 Text(
-                    "Browse puzzles by UTC date",
+                    "Browse today's and past UTC puzzles",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -362,54 +319,9 @@ private fun HeaderSection(
                             .semantics { contentDescription = "Load next UTC date" },
                         label = "Next",
                         onClick = onLoadNext,
-                        enabled = !uiState.isLoading
+                        enabled = !uiState.isLoading && uiState.canLoadNext
                     )
                 }
-            }
-
-            if (isCompact) {
-                Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                    DateInputField(
-                        value = dateInput,
-                        enabled = !uiState.isLoading,
-                        onValueChange = onDateInputChanged,
-                        onSubmit = onLoadDate
-                    )
-                    LoadDateButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !uiState.isLoading,
-                        onClick = onLoadDate
-                    )
-                }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    DateInputField(
-                        value = dateInput,
-                        enabled = !uiState.isLoading,
-                        onValueChange = onDateInputChanged,
-                        onSubmit = onLoadDate,
-                        modifier = Modifier.weight(1f)
-                    )
-                    LoadDateButton(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .heightIn(min = sizes.minTouchTarget),
-                        enabled = !uiState.isLoading,
-                        onClick = onLoadDate
-                    )
-                }
-            }
-
-            dateInputError?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error
-                )
             }
         }
     }
@@ -434,7 +346,6 @@ private fun HeaderIntro(uiState: GameUiState) {
 @Composable
 private fun DailySnapshot(
     uiState: GameUiState,
-    isCompact: Boolean,
     modifier: Modifier = Modifier
 ) {
     val spacing = VibeCheckThemeTokens.spacing
@@ -447,100 +358,23 @@ private fun DailySnapshot(
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     ) {
-        val contentModifier = Modifier.padding(spacing.md)
-        if (isCompact) {
-            Column(
-                modifier = contentModifier,
-                verticalArrangement = Arrangement.spacedBy(spacing.sm)
-            ) {
-                SnapshotMetric(label = "UTC date", value = uiState.utcDate.ifBlank { "Waiting" })
-                SnapshotMetric(label = "Models", value = uiState.availableModels.size.toString())
-                SnapshotMetric(
-                    label = "Board",
-                    value = when {
-                        uiState.isLoading -> "Loading"
-                        uiState.solved -> "Solved"
-                        uiState.puzzleAvailable -> "Live"
-                        else -> "Offline"
-                    }
-                )
-            }
-        } else {
-            Row(
-                modifier = contentModifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.sm)
-            ) {
-                SnapshotMetric(
-                    label = "UTC date",
-                    value = uiState.utcDate.ifBlank { "Waiting" },
-                    modifier = Modifier.weight(1f)
-                )
-                SnapshotMetric(
-                    label = "Models",
-                    value = uiState.availableModels.size.toString(),
-                    modifier = Modifier.weight(1f)
-                )
-                SnapshotMetric(
-                    label = "Board",
-                    value = when {
-                        uiState.isLoading -> "Loading"
-                        uiState.solved -> "Solved"
-                        uiState.puzzleAvailable -> "Live"
-                        else -> "Offline"
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(spacing.md),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs)
+        ) {
+            Text(
+                "UTC date",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                uiState.utcDate.ifBlank { "Waiting" },
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
-    }
-}
-
-@Composable
-private fun DateInputField(
-    value: String,
-    enabled: Boolean,
-    onValueChange: (String) -> Unit,
-    onSubmit: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedTextField(
-        modifier = modifier
-            .fillMaxWidth()
-            .onPreviewKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.Enter) {
-                    onSubmit()
-                    true
-                } else {
-                    false
-                }
-            },
-        value = value,
-        onValueChange = onValueChange,
-        enabled = enabled,
-        singleLine = true,
-        label = { Text("Load UTC date (YYYY-MM-DD)") },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onSubmit() })
-    )
-}
-
-@Composable
-private fun LoadDateButton(
-    modifier: Modifier,
-    enabled: Boolean,
-    onClick: () -> Unit
-) {
-    Button(
-        modifier = modifier
-            .semantics { contentDescription = "Load selected UTC date" },
-        onClick = onClick,
-        enabled = enabled,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        )
-    ) {
-        Text("Load Date")
     }
 }
 
@@ -735,73 +569,42 @@ private fun StatsCard(uiState: GameUiState) {
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
             SectionHeading(
-                title = "Record book",
-                detail = "A cleaner snapshot of how you and each model have been performing."
+                title = "Stats",
+                detail = "Your overall results across completed puzzles."
             )
 
             BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                 val stacked = maxWidth < 540.dp
+                val averageGuesses = uiState.stats.averageGuesses
+                    ?.let { round(it * 100.0) / 100.0 }
+                    ?.toString()
+                    ?: "-"
+                val lowestGuesses = uiState.stats.lowestGuesses?.toString() ?: "-"
                 if (stacked) {
                     Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                        SummaryStatTile("Wins", uiState.stats.totalWins.toString(), "Total clears")
-                        SummaryStatTile("Streak", uiState.stats.currentStreak.toString(), "Current run")
-                        SummaryStatTile("Best", uiState.stats.maxStreak.toString(), "Longest streak")
+                        SummaryStatTile("Wins", uiState.stats.totalWins.toString(), "Completed puzzles")
+                        SummaryStatTile("Average", averageGuesses, "Guesses per win")
+                        SummaryStatTile("Lowest", lowestGuesses, "Best solve")
                     }
                 } else {
                     Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
                         SummaryStatTile(
                             label = "Wins",
                             value = uiState.stats.totalWins.toString(),
-                            detail = "Total clears",
+                            detail = "Completed puzzles",
                             modifier = Modifier.weight(1f)
                         )
                         SummaryStatTile(
-                            label = "Streak",
-                            value = uiState.stats.currentStreak.toString(),
-                            detail = "Current run",
+                            label = "Average",
+                            value = averageGuesses,
+                            detail = "Guesses per win",
                             modifier = Modifier.weight(1f)
                         )
                         SummaryStatTile(
-                            label = "Best",
-                            value = uiState.stats.maxStreak.toString(),
-                            detail = "Longest streak",
+                            label = "Lowest",
+                            value = lowestGuesses,
+                            detail = "Best solve",
                             modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-
-            if (uiState.stats.winsByModel.isNotEmpty()) {
-                StatsGroup(title = "Wins by model") {
-                    uiState.stats.winsByModel.forEach { (modelId, wins) ->
-                        StatRow(label = modelId, value = wins.toString())
-                    }
-                }
-            }
-
-            if (uiState.stats.averageGuessesByModel.isNotEmpty()) {
-                StatsGroup(title = "Average guesses") {
-                    uiState.stats.averageGuessesByModel.forEach { (modelId, avg) ->
-                        val rounded = round(avg * 100.0) / 100.0
-                        StatRow(label = modelId, value = rounded.toString())
-                    }
-                }
-            }
-
-            if (uiState.stats.bestGuessesByModel.isNotEmpty()) {
-                StatsGroup(title = "Best solve guesses") {
-                    uiState.stats.bestGuessesByModel.forEach { (modelId, best) ->
-                        StatRow(label = modelId, value = best.toString())
-                    }
-                }
-            }
-
-            if (uiState.stats.recentSolves.isNotEmpty()) {
-                StatsGroup(title = "Recent solves") {
-                    uiState.stats.recentSolves.forEach { record ->
-                        StatRow(
-                            label = record.utcDate,
-                            value = "${record.modelId} / ${record.guessesToSolve} guesses"
                         )
                     }
                 }
