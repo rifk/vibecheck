@@ -4,7 +4,6 @@
   "models": [
     {
       "modelId": "model_1",
-      "displayName": "Model 1",
       "rankedWords": [
         "binary",
         "hickory",
@@ -31,7 +30,6 @@
     },
     {
       "modelId": "model_2",
-      "displayName": "Model 2",
       "rankedWords": [
         "binary",
         "limestone",
@@ -57,7 +55,6 @@
     },
     {
       "modelId": "model_3",
-      "displayName": "Model 3",
       "rankedWords": [
         "binary",
         "rainstorm",

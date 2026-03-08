@@ -9,10 +9,12 @@ fun main(args: Array<String>) {
     val expectedStartDate = args.getOrNull(1)?.let(LocalDate::parse)
     val expectedDayCount = args.getOrNull(2)?.toIntOrNull() ?: 90
     val canonicalWordList = args.getOrNull(3) ?: "content/lexicon/common_words_20k.txt"
+    val modelCatalog = args.getOrNull(4) ?: "content/models/model_info.json"
     val validator = ContentValidator(
         expectedDayCount = expectedDayCount,
         expectedStartDate = expectedStartDate,
-        canonicalWordListPath = Path.of(canonicalWordList)
+        canonicalWordListPath = Path.of(canonicalWordList),
+        modelCatalogPath = Path.of(modelCatalog)
     )
     val result = validator.validateDirectory(Path.of(directory))
 

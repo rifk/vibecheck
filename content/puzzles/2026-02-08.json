@@ -4,7 +4,6 @@
   "models": [
     {
       "modelId": "model_1",
-      "displayName": "Model 1",
       "rankedWords": [
         "keystone",
         "yellow",
@@ -29,7 +28,6 @@
     },
     {
       "modelId": "model_2",
-      "displayName": "Model 2",
       "rankedWords": [
         "keystone",
         "cinder",
@@ -56,7 +54,6 @@
     },
     {
       "modelId": "model_3",
-      "displayName": "Model 3",
       "rankedWords": [
         "keystone",
         "amber",

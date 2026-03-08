@@ -4,7 +4,6 @@
   "models": [
     {
       "modelId": "model_1",
-      "displayName": "Model 1",
       "rankedWords": [
         "atlas",
         "foxglove",
@@ -31,7 +30,6 @@
     },
     {
       "modelId": "model_2",
-      "displayName": "Model 2",
       "rankedWords": [
         "atlas",
         "pinecone",
@@ -56,7 +54,6 @@
     },
     {
       "modelId": "model_3",
-      "displayName": "Model 3",
       "rankedWords": [
         "atlas",
         "hickory",

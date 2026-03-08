@@ -4,7 +4,6 @@
   "models": [
     {
       "modelId": "model_1",
-      "displayName": "Model 1",
       "rankedWords": [
         "delta",
         "jasmine",
@@ -31,7 +30,6 @@
     },
     {
       "modelId": "model_2",
-      "displayName": "Model 2",
       "rankedWords": [
         "delta",
         "quiver",
@@ -53,7 +51,6 @@
     },
     {
       "modelId": "model_3",
-      "displayName": "Model 3",
       "rankedWords": [
         "delta",
         "lotus",

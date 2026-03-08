@@ -13,6 +13,7 @@ class ContentValidator(
     private val expectedDayCount: Int = 90,
     private val expectedStartDate: LocalDate? = null,
     private val canonicalWordListPath: Path? = null,
+    private val modelCatalogPath: Path? = null,
     private val canonicalWords: Set<String>? = null,
     private val json: Json = Json { ignoreUnknownKeys = true }
 ) {
@@ -36,11 +37,19 @@ class ContentValidator(
         if (canonicalLookup.isEmpty()) {
             errors += "Canonical lexicon is empty or missing. Provide a valid common words file."
         }
+        val modelCatalog = loadModelCatalog()
+        errors += modelCatalog.errors
 
         val seenDates = mutableSetOf<String>()
         val parsedDates = mutableSetOf<LocalDate>()
         files.forEach { file ->
-            val fileErrors = validateFile(file, seenDates, parsedDates, canonicalLookup)
+            val fileErrors = validateFile(
+                file = file,
+                seenDates = seenDates,
+                parsedDates = parsedDates,
+                canonicalLookup = canonicalLookup,
+                validModelIds = modelCatalog.models.takeIf { modelCatalog.errors.isEmpty() }?.keys
+            )
             errors += fileErrors
         }
 
@@ -55,7 +64,8 @@ class ContentValidator(
         file: Path,
         seenDates: MutableSet<String>,
         parsedDates: MutableSet<LocalDate>,
-        canonicalLookup: Set<String>
+        canonicalLookup: Set<String>,
+        validModelIds: Set<String>?
     ): List<String> {
         val errors = mutableListOf<String>()
         val payload = runCatching { file.inputStream().bufferedReader().readText() }
@@ -107,9 +117,8 @@ class ContentValidator(
             val modelPrefix = "${file.name}: models[$index]"
             if (model.modelId.isBlank()) {
                 errors += "$modelPrefix modelId must be non-empty."
-            }
-            if (model.displayName.isBlank()) {
-                errors += "$modelPrefix displayName must be non-empty."
+            } else if (validModelIds != null && model.modelId.trim() !in validModelIds) {
+                errors += "$modelPrefix modelId '${model.modelId.trim()}' must exist in model_info.json."
             }
             if (model.rankedWords.isEmpty()) {
                 errors += "$modelPrefix rankedWords must be non-empty."
@@ -180,6 +189,84 @@ class ContentValidator(
             }
         }.getOrDefault(emptySet())
     }
+
+    private fun loadModelCatalog(): ModelCatalogValidationResult {
+        val path = modelCatalogPath ?: return ModelCatalogValidationResult(
+            models = emptyMap(),
+            errors = listOf("Model catalog is empty or missing. Provide a valid model_info.json file.")
+        )
+        if (!Files.exists(path)) {
+            return ModelCatalogValidationResult(
+                models = emptyMap(),
+                errors = listOf("Model catalog is empty or missing. Provide a valid model_info.json file.")
+            )
+        }
+
+        val payload = runCatching { path.inputStream().bufferedReader().readText() }
+            .getOrElse {
+                return ModelCatalogValidationResult(
+                    models = emptyMap(),
+                    errors = listOf("Unable to read model catalog: ${it.message}")
+                )
+            }
+
+        val catalog = runCatching { json.decodeFromString<ModelCatalogFile>(payload) }
+            .getOrElse {
+                return ModelCatalogValidationResult(
+                    models = emptyMap(),
+                    errors = listOf("Model catalog has invalid JSON schema: ${it.message}")
+                )
+            }
+
+        if (catalog.models.isEmpty()) {
+            return ModelCatalogValidationResult(
+                models = emptyMap(),
+                errors = listOf("Model catalog must contain at least one model.")
+            )
+        }
+
+        val errors = mutableListOf<String>()
+        val normalized = catalog.models.mapIndexedNotNull { index, model ->
+            val prefix = "model_info.json: models[$index]"
+            val modelId = model.modelId.trim()
+            val title = model.title.trim()
+            val description = model.description.trim()
+            val info = model.info.trim()
+
+            if (modelId.isBlank()) {
+                errors += "$prefix modelId must be non-empty."
+                return@mapIndexedNotNull null
+            }
+            if (title.isBlank()) {
+                errors += "$prefix title must be non-empty."
+            }
+            if (description.isBlank()) {
+                errors += "$prefix description must be non-empty."
+            }
+            if (info.isBlank()) {
+                errors += "$prefix info must be non-empty."
+            }
+
+            ValidModelCatalogEntry(
+                modelId = modelId,
+                title = title,
+                description = description,
+                info = info
+            )
+        }
+
+        normalized.groupBy { it.modelId }
+            .filterValues { it.size > 1 }
+            .keys
+            .forEach { duplicateId ->
+                errors += "model_info.json: duplicate modelId '$duplicateId'."
+            }
+
+        return ModelCatalogValidationResult(
+            models = normalized.associateBy { it.modelId },
+            errors = errors
+        )
+    }
 }
 
 data class ValidationResult(
@@ -198,8 +285,32 @@ data class DayPuzzleFile(
 @Serializable
 data class ModelPuzzleFile(
     val modelId: String,
-    val displayName: String,
     val rankedWords: List<String>
+)
+
+@Serializable
+data class ModelCatalogFile(
+    val models: List<ModelCatalogEntryFile>
+)
+
+@Serializable
+data class ModelCatalogEntryFile(
+    val modelId: String,
+    val title: String,
+    val description: String,
+    val info: String
+)
+
+data class ModelCatalogValidationResult(
+    val models: Map<String, ValidModelCatalogEntry>,
+    val errors: List<String>
+)
+
+data class ValidModelCatalogEntry(
+    val modelId: String,
+    val title: String,
+    val description: String,
+    val info: String
 )
 
 private object WordRules {

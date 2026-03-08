@@ -10,7 +10,7 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 - `RemotePuzzleSource` + `RemotePuzzleClient` contracts are present for backend integration, while runtime defaults remain bundled-only.
 - Local persistence with `multiplatform-settings` for day state and basic stats.
 - Stats include streaks, wins/averages by model, best guesses by model, and recent solve history.
-- Shared Compose UI that renders model options dynamically based on each day file.
+- Shared Compose UI that renders model options dynamically from daily puzzle data plus shared model metadata.
 - Per-date puzzle loads are cached via `CachingPuzzleSource` in app composition.
 - Content validator CLI module in `tools/content-validator`.
 - 90 bundled puzzle JSON files in `content/puzzles`.
@@ -22,6 +22,7 @@ Kotlin Multiplatform game targeting Android, iOS, and web (Wasm).
 - `tools/content-validator`: JVM CLI to validate puzzle content.
 - `tools/lexicon-generator`: Python CLI to build canonical lexicon, lemma map, and prune puzzle content.
 - `content/puzzles`: v1 source-of-truth puzzle files.
+- `content/models`: shared model titles, descriptions, and info copy keyed by `modelId`.
 - `content/lexicon`: canonical word list and lemma map consumed at runtime and validation time.
 - `docs/puzzle-schema.md`: schema and rules.
 

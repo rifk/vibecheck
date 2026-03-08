@@ -4,7 +4,6 @@
   "models": [
     {
       "modelId": "model_1",
-      "displayName": "Model 1",
       "rankedWords": [
         "canyon",
         "helix",
@@ -31,7 +30,6 @@
     },
     {
       "modelId": "model_2",
-      "displayName": "Model 2",
       "rankedWords": [
         "canyon",
         "island",
@@ -55,7 +53,6 @@
     },
     {
       "modelId": "model_3",
-      "displayName": "Model 3",
       "rankedWords": [
         "canyon",
         "jasmine",

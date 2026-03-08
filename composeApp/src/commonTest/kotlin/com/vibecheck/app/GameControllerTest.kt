@@ -1,10 +1,12 @@
 package com.vibecheck.app
 
 import com.vibecheck.data.GameStateStore
+import com.vibecheck.data.ModelCatalogSource
 import com.vibecheck.data.PuzzleSource
 import com.vibecheck.domain.GuessLexicon
 import com.vibecheck.domain.UtcDateProvider
 import com.vibecheck.model.DayPuzzle
+import com.vibecheck.model.ModelMetadata
 import com.vibecheck.model.ModelPuzzle
 import com.vibecheck.model.PersistedAppState
 import kotlinx.coroutines.test.runTest
@@ -22,10 +24,10 @@ class GameControllerTest {
             utcDate = date.toString(),
             answer = "serenity",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("serenity", "calm")),
-                ModelPuzzle("m2", "Model 2", listOf("serenity", "peace")),
-                ModelPuzzle("m3", "Model 3", listOf("serenity", "quiet")),
-                ModelPuzzle("m4", "Model 4", listOf("serenity", "still"))
+                ModelPuzzle("m1", listOf("serenity", "calm")),
+                ModelPuzzle("m2", listOf("serenity", "peace")),
+                ModelPuzzle("m3", listOf("serenity", "quiet")),
+                ModelPuzzle("m4", listOf("serenity", "still"))
             )
         )
 
@@ -42,14 +44,71 @@ class GameControllerTest {
     }
 
     @Test
+    fun metadataCatalog_populatesTitleDescriptionAndInfo() = runTest {
+        val date = LocalDate.parse("2026-01-08")
+        val puzzle = DayPuzzle(
+            utcDate = date.toString(),
+            answer = "serenity",
+            models = listOf(ModelPuzzle("m1", listOf("serenity", "calm")))
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(date to puzzle)),
+            modelCatalogSource = FakeModelCatalogSource(
+                mapOf(
+                    "m1" to ModelMetadata(
+                        modelId = "m1",
+                        title = "Atlas",
+                        description = "Steady navigator",
+                        info = "Maps broad semantic terrain before narrowing in."
+                    )
+                )
+            ),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(date)
+        )
+
+        controller.loadToday()
+
+        val model = controller.uiState.availableModels.single()
+        assertEquals("Atlas", model.title)
+        assertEquals("Steady navigator", model.description)
+        assertEquals("Maps broad semantic terrain before narrowing in.", model.info)
+    }
+
+    @Test
+    fun missingMetadata_fallsBackToModelIdAndDefaultCopy() = runTest {
+        val date = LocalDate.parse("2026-01-09")
+        val puzzle = DayPuzzle(
+            utcDate = date.toString(),
+            answer = "signal",
+            models = listOf(ModelPuzzle("m1", listOf("signal", "noise")))
+        )
+
+        val controller = GameController(
+            puzzleSource = FakePuzzleSource(mapOf(date to puzzle)),
+            modelCatalogSource = FakeModelCatalogSource(emptyMap()),
+            gameStateStore = InMemoryStore(),
+            utcDateProvider = FixedDateProvider(date)
+        )
+
+        controller.loadToday()
+
+        val model = controller.uiState.availableModels.single()
+        assertEquals("m1", model.title)
+        assertEquals("Description unavailable", model.description)
+        assertEquals("No model info available yet.", model.info)
+    }
+
+    @Test
     fun solvedDay_allowsSwitchingToOtherModelsForBrowsing() = runTest {
         val date = LocalDate.parse("2026-01-02")
         val puzzle = DayPuzzle(
             utcDate = date.toString(),
             answer = "signal",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("signal", "noise")),
-                ModelPuzzle("m2", "Model 2", listOf("signal", "tone"))
+                ModelPuzzle("m1", listOf("signal", "noise")),
+                ModelPuzzle("m2", listOf("signal", "tone"))
             )
         )
 
@@ -76,8 +135,8 @@ class GameControllerTest {
             utcDate = date.toString(),
             answer = "signal",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("signal", "noise")),
-                ModelPuzzle("m2", "Model 2", listOf("signal", "tone", "hum"))
+                ModelPuzzle("m1", listOf("signal", "noise")),
+                ModelPuzzle("m2", listOf("signal", "tone", "hum"))
             )
         )
 
@@ -110,8 +169,8 @@ class GameControllerTest {
             utcDate = date.toString(),
             answer = "anchor",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("anchor", "chain", "ship")),
-                ModelPuzzle("m2", "Model 2", listOf("anchor", "dock", "port"))
+                ModelPuzzle("m1", listOf("anchor", "chain", "ship")),
+                ModelPuzzle("m2", listOf("anchor", "dock", "port"))
             )
         )
 
@@ -141,8 +200,8 @@ class GameControllerTest {
             utcDate = date.toString(),
             answer = "anchor",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("anchor", "chain", "ship")),
-                ModelPuzzle("m2", "Model 2", listOf("anchor", "dock", "port"))
+                ModelPuzzle("m1", listOf("anchor", "chain", "ship")),
+                ModelPuzzle("m2", listOf("anchor", "dock", "port"))
             )
         )
 
@@ -177,7 +236,7 @@ class GameControllerTest {
             utcDate = availableDate.toString(),
             answer = "harbor",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("harbor", "port", "dock"))
+                ModelPuzzle("m1", listOf("harbor", "port", "dock"))
             )
         )
 
@@ -221,17 +280,17 @@ class GameControllerTest {
         val puzzle1 = DayPuzzle(
             utcDate = day1.toString(),
             answer = "anchor",
-            models = listOf(ModelPuzzle("m1", "Model 1", listOf("anchor", "chain")))
+            models = listOf(ModelPuzzle("m1", listOf("anchor", "chain")))
         )
         val puzzle2 = DayPuzzle(
             utcDate = day2.toString(),
             answer = "signal",
-            models = listOf(ModelPuzzle("m1", "Model 1", listOf("signal", "noise")))
+            models = listOf(ModelPuzzle("m1", listOf("signal", "noise")))
         )
         val puzzle3 = DayPuzzle(
             utcDate = day3.toString(),
             answer = "harbor",
-            models = listOf(ModelPuzzle("m1", "Model 1", listOf("harbor", "port")))
+            models = listOf(ModelPuzzle("m1", listOf("harbor", "port")))
         )
 
         val controller = GameController(
@@ -272,7 +331,7 @@ class GameControllerTest {
         val puzzle = DayPuzzle(
             utcDate = today.toString(),
             answer = "signal",
-            models = listOf(ModelPuzzle("m1", "Model 1", listOf("signal", "noise")))
+            models = listOf(ModelPuzzle("m1", listOf("signal", "noise")))
         )
 
         val controller = GameController(
@@ -316,7 +375,7 @@ class GameControllerTest {
             utcDate = date.toString(),
             answer = "signal",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("signal", "tone", "noise", "echo"))
+                ModelPuzzle("m1", listOf("signal", "tone", "noise", "echo"))
             )
         )
 
@@ -348,7 +407,7 @@ class GameControllerTest {
             utcDate = day.toString(),
             answer = "harbor",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("harbor", "port", "dock"))
+                ModelPuzzle("m1", listOf("harbor", "port", "dock"))
             )
         )
 
@@ -395,12 +454,12 @@ class GameControllerTest {
         val puzzle1 = DayPuzzle(
             utcDate = day1.toString(),
             answer = "serenity",
-            models = listOf(ModelPuzzle("m1", "Model 1", listOf("serenity", "calm")))
+            models = listOf(ModelPuzzle("m1", listOf("serenity", "calm")))
         )
         val puzzle2 = DayPuzzle(
             utcDate = day2.toString(),
             answer = "signal",
-            models = listOf(ModelPuzzle("m2", "Model 2", listOf("signal", "noise")))
+            models = listOf(ModelPuzzle("m2", listOf("signal", "noise")))
         )
 
         val store = InMemoryStore()
@@ -433,7 +492,7 @@ class GameControllerTest {
             utcDate = day.toString(),
             answer = "run",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("run", "jog"))
+                ModelPuzzle("m1", listOf("run", "jog"))
             )
         )
 
@@ -459,7 +518,7 @@ class GameControllerTest {
             utcDate = day.toString(),
             answer = "anchor",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("anchor", "run", "jog", "sprint"))
+                ModelPuzzle("m1", listOf("anchor", "run", "jog", "sprint"))
             )
         )
 
@@ -512,4 +571,10 @@ private class FakeGuessLexicon(
     private val mapping: Map<String, String>
 ) : GuessLexicon {
     override fun canonicalize(input: String): String? = mapping[input]
+}
+
+private class FakeModelCatalogSource(
+    private val metadataById: Map<String, ModelMetadata>
+) : ModelCatalogSource {
+    override suspend fun getCatalog(): Map<String, ModelMetadata> = metadataById
 }

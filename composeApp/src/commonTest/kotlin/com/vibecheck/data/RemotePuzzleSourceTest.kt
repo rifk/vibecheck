@@ -20,7 +20,6 @@ class RemotePuzzleSourceTest {
                       "models": [
                         {
                           "modelId": "m1",
-                          "displayName": "Model 1",
                           "rankedWords": ["signal", "noise", "tone"]
                         }
                       ]

@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.vibecheck.data.GameStateStore
+import com.vibecheck.data.ModelCatalogSource
 import com.vibecheck.data.PuzzleSource
 import com.vibecheck.domain.GameEngine
 import com.vibecheck.domain.GuessLexicon
@@ -16,6 +17,7 @@ import com.vibecheck.domain.WordRules
 import com.vibecheck.model.DayPlayState
 import com.vibecheck.model.DayPuzzle
 import com.vibecheck.model.GuessOutcome
+import com.vibecheck.model.ModelMetadata
 import com.vibecheck.model.PersistedAppState
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -23,12 +25,17 @@ import kotlinx.datetime.plus
 
 class GameController(
     private val puzzleSource: PuzzleSource,
+    private val modelCatalogSource: ModelCatalogSource = object : ModelCatalogSource {
+        override suspend fun getCatalog(): Map<String, ModelMetadata> = emptyMap()
+    },
     private val gameStateStore: GameStateStore,
     private val utcDateProvider: UtcDateProvider,
     private val guessLexicon: GuessLexicon = NoOpGuessLexicon
 ) {
     private companion object {
         const val FUTURE_PUZZLE_MESSAGE = "Future puzzles are not available yet."
+        const val FALLBACK_DESCRIPTION = "Description unavailable"
+        const val FALLBACK_INFO = "No model info available yet."
     }
 
     var uiState by mutableStateOf(GameUiState())
@@ -36,6 +43,7 @@ class GameController(
 
     private var persistedState: PersistedAppState = gameStateStore.loadState()
     private var currentPuzzle: DayPuzzle? = null
+    private var currentModelCatalog: Map<String, ModelMetadata> = emptyMap()
     private var currentDayState: DayPlayState? = null
     private var currentDate: LocalDate? = null
 
@@ -68,6 +76,7 @@ class GameController(
         val puzzle = runCatching { puzzleSource.getPuzzle(date) }
             .getOrElse {
                 currentPuzzle = null
+                currentModelCatalog = emptyMap()
                 currentDayState = null
                 currentDate = date
                 uiState = uiState.copy(
@@ -86,6 +95,7 @@ class GameController(
             }
         if (puzzle == null) {
             currentPuzzle = null
+            currentModelCatalog = emptyMap()
             currentDayState = null
             currentDate = date
             uiState = uiState.copy(
@@ -106,8 +116,10 @@ class GameController(
         val dateKey = date.toString()
         val priorState = persistedState.dayStates[dateKey]
         val initialized = GameEngine.initialDayState(puzzle, priorState)
+        val modelCatalog = runCatching { modelCatalogSource.getCatalog() }.getOrDefault(emptyMap())
 
         currentPuzzle = puzzle
+        currentModelCatalog = modelCatalog
         currentDate = date
         currentDayState = initialized
 
@@ -207,9 +219,12 @@ class GameController(
 
         val models = puzzle.models.map { model ->
             val modelGuesses = state.guessesByModel[model.modelId].orEmpty()
+            val metadata = currentModelCatalog[model.modelId]
             ModelUiState(
                 modelId = model.modelId,
-                displayName = model.displayName,
+                title = metadata?.title ?: model.modelId,
+                description = metadata?.description ?: FALLBACK_DESCRIPTION,
+                info = metadata?.info ?: FALLBACK_INFO,
                 attempts = modelGuesses.size,
                 bestRank = modelGuesses.minOfOrNull { it.rank },
                 locked = false
@@ -278,7 +293,9 @@ data class GameUiState(
 
 data class ModelUiState(
     val modelId: String,
-    val displayName: String,
+    val title: String,
+    val description: String,
+    val info: String,
     val attempts: Int,
     val bestRank: Int?,
     val locked: Boolean

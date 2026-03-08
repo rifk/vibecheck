@@ -1,0 +1,28 @@
+{
+  "models": [
+    {
+      "modelId": "model_1",
+      "title": "Atlas",
+      "description": "Broad mapmaker",
+      "info": "Atlas sweeps a wide semantic area first, then tightens its guesses once it spots a stable region. Expect it to feel exploratory early and more decisive once a pattern clicks."
+    },
+    {
+      "modelId": "model_2",
+      "title": "Spark",
+      "description": "Fast pattern chaser",
+      "info": "Spark leans toward sharp local similarities and quick pivots. It often acts like it has found a scent trail and is willing to commit harder to one neighborhood."
+    },
+    {
+      "modelId": "model_3",
+      "title": "Drift",
+      "description": "Layered wanderer",
+      "info": "Drift moves through the board in softer arcs, linking words through broader thematic texture instead of direct jumps. Its rankings can feel mood-driven in a useful way."
+    },
+    {
+      "modelId": "model_4",
+      "title": "Prism",
+      "description": "Contrast-heavy scout",
+      "info": "Prism tends to separate close concepts by testing contrast as much as similarity. It is good for seeing where a puzzle splits into adjacent but distinct clusters."
+    }
+  ]
+}

@@ -300,7 +300,6 @@ def prune_puzzles(args: argparse.Namespace) -> int:
             kept_models.append(
                 {
                     "modelId": model.get("modelId", "").strip(),
-                    "displayName": model.get("displayName", "").strip(),
                     "rankedWords": new_words,
                 }
             )

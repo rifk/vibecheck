@@ -17,7 +17,7 @@ class CachingPuzzleSourceTest {
             utcDate = "2026-01-01",
             answer = "serenity",
             models = listOf(
-                ModelPuzzle("m1", "Model 1", listOf("serenity", "calm"))
+                ModelPuzzle("m1", listOf("serenity", "calm"))
             )
         )
         val delegate = CountingPuzzleSource(mapOf(date to puzzle))
