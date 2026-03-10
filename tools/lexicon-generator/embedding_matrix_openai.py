@@ -25,7 +25,7 @@ from embedding_store import (
 
 MODEL_ID = "text-embedding-3-large"
 PROVIDER = "openai"
-DEFAULT_WORDS_FILE = "content/lexicon/common_words_20k.txt"
+DEFAULT_WORDS_FILE = "content/lexicon/common_words_50k.txt"
 DEFAULT_OUTPUT_DIR = "content/lexicon/embeddings/openai_text_embedding_3_large"
 
 
@@ -39,7 +39,7 @@ def parse_args() -> argparse.Namespace:
     build.add_argument(
         "--words-file",
         default=DEFAULT_WORDS_FILE,
-        help="Path to canonical 20k word list.",
+        help="Path to canonical 50k word list.",
     )
     build.add_argument(
         "--output-dir",

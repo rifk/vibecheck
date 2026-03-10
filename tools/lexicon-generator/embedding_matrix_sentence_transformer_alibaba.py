@@ -21,10 +21,10 @@ from embedding_store import (
     write_words_file,
 )
 
-MODEL_ID = "google/embeddinggemma-300m"
+MODEL_ID = "Alibaba-NLP/gte-Qwen2-1.5B-instruct"
 PROVIDER = "sentence-transformers"
 DEFAULT_WORDS_FILE = "content/lexicon/common_words_50k.txt"
-DEFAULT_OUTPUT_DIR = "content/lexicon/embeddings/sentence_transformer_embeddinggemma300m"
+DEFAULT_OUTPUT_DIR = "content/lexicon/embeddings/sentence_transformer_alibaba_gte-qwen2-1_5b-instruct"
 
 
 def parse_args() -> argparse.Namespace:

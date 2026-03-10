@@ -1,7 +1,7 @@
 {
-  "generatedAtUtc": "2026-03-01T17:31:47.333636+00:00",
-  "targetCanonicalCount": 20000,
-  "candidateCount": 200000,
+  "generatedAtUtc": "2026-03-08T22:17:49.704674+00:00",
+  "targetCanonicalCount": 50000,
+  "candidateCount": 500000,
   "tokenRegex": "^[a-z]{2,}$",
   "source": {
     "frequency": "wordfreq",
@@ -11,11 +11,11 @@
     "pastTenseEdPrefersVerbLemma": true
   },
   "files": {
-    "common_words_20k": "content/lexicon/common_words_20k.txt",
+    "common_words_50k": "content/lexicon/common_words_50k.txt",
     "lemma_map": "content/lexicon/lemma_map.json"
   },
   "hashes": {
-    "canonicalWordsSha256": "91e4f57604032b2ebf09f131b40cc2547047ab75f0c447b6c1d770af34b05dbc",
-    "lemmaMapSha256": "5f4a8e36caeb62592b5901002f4574455b83774d4df3b744abef0c348adb48a7"
+    "canonicalWordsSha256": "0bbf47560b5e447898c3502b47d41ed7f39bcf075bc01147a618cdca3c6b252b",
+    "lemmaMapSha256": "6f574e97b994f7a43bc5c71412e3a51435bcdb7d004cf71e845afd00241190f4"
   }
 }

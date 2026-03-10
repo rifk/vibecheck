@@ -71,7 +71,7 @@ python3 tools/lexicon-generator/word_of_day_generator.py \
 Two scripts generate normalized embedding artifacts for the canonical lexicon:
 
 - `embedding_matrix_sentence_transformer.py` using `google/embeddinggemma-300m`
-- `embedding_matrix_openai.py` using `text-embedding-3-small`
+- `embedding_matrix_openai.py` using `text-embedding-3-large`
 
 Install dependencies:
 
@@ -106,14 +106,14 @@ Build:
 export OPENAI_API_KEY="your-key"
 python3 tools/lexicon-generator/embedding_matrix_openai.py build \
   --words-file content/lexicon/common_words_20k.txt \
-  --output-dir content/lexicon/embeddings/openai_text_embedding_3_small
+  --output-dir content/lexicon/embeddings/openai_text_embedding_3_large
 ```
 
 Query:
 
 ```bash
 python3 tools/lexicon-generator/embedding_matrix_openai.py query \
-  --output-dir content/lexicon/embeddings/openai_text_embedding_3_small \
+  --output-dir content/lexicon/embeddings/openai_text_embedding_3_large \
   --word apple \
   --top-k 25
 ```

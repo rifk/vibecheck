@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--words-file",
-        default="content/lexicon/common_words_20k.txt",
+        default="content/lexicon/common_words_50k.txt",
         help="Path to canonical word list file.",
     )
     parser.add_argument(
@@ -54,9 +54,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--common-bias",
         type=float,
-        default=1.5,
+        default=2.0,
         help=(
-            "Bias toward earlier (more common) words in the 20k list. "
+            "Bias toward earlier (more common) words in the 50k list. "
             "1.0 = uniform, higher values increase common-word preference."
         ),
     )

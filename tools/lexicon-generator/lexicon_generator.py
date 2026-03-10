@@ -2,7 +2,7 @@
 """Build canonical lexicon + lemma map and prune puzzle files.
 
 Commands:
-  generate  -> writes common_words_20k.txt, lemma_map.json, lexicon_metadata.json
+  generate  -> writes common_words_50k.txt, lemma_map.json, lexicon_metadata.json
   prune     -> removes puzzle words not in canonical list and rewrites puzzle files
 """
 
@@ -196,7 +196,7 @@ def generate_lexicon(args: argparse.Namespace) -> int:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    words_path = output_dir / "common_words_20k.txt"
+    words_path = output_dir / "common_words_50k.txt"
     lemma_path = output_dir / "lemma_map.json"
     metadata_path = output_dir / "lexicon_metadata.json"
 
@@ -219,7 +219,7 @@ def generate_lexicon(args: argparse.Namespace) -> int:
             "pastTenseEdPrefersVerbLemma": True,
         },
         "files": {
-            "common_words_20k": str(words_path),
+            "common_words_50k": str(words_path),
             "lemma_map": str(lemma_path),
         },
         "hashes": {
@@ -371,14 +371,14 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
     generate = subparsers.add_parser("generate", help="Generate canonical list and lemma map")
     generate.add_argument("--output-dir", default="content/lexicon")
-    generate.add_argument("--target-count", type=int, default=20_000)
-    generate.add_argument("--candidate-count", type=int, default=200_000)
+    generate.add_argument("--target-count", type=int, default=50_000)
+    generate.add_argument("--candidate-count", type=int, default=500_000)
     generate.add_argument("--strict-wordnet", action="store_true")
     generate.set_defaults(func=generate_lexicon)
 
     prune = subparsers.add_parser("prune", help="Prune puzzle files against canonical word list")
     prune.add_argument("--puzzles-dir", default="content/puzzles")
-    prune.add_argument("--canonical-words", default="content/lexicon/common_words_20k.txt")
+    prune.add_argument("--canonical-words", default="content/lexicon/common_words_50k.txt")
     prune.add_argument("--report-out", default="content/lexicon/prune_report.json")
     prune.set_defaults(func=prune_puzzles)
 
