@@ -111,6 +111,12 @@ def canonical_candidate(
     return scored[0][1]
 
 
+def pick_base_form(lemmas: set[str], fallback: str) -> str:
+    if not lemmas:
+        return fallback
+    return sorted(lemmas, key=lambda lemma: (len(lemma), lemma))[0]
+
+
 def heuristic_lemma_candidates(token: str) -> set[str]:
     forms = {token}
     if len(token) > 4 and token.endswith("ies"):
@@ -125,6 +131,16 @@ def heuristic_lemma_candidates(token: str) -> set[str]:
         forms.add(token[:-2])
     if len(token) > 2 and token.endswith("s"):
         forms.add(token[:-1])
+    if len(token) > 4 and token.endswith("ers"):
+        base = token[:-3]
+        forms.add(base)
+        if len(base) > 2 and base[-1] == base[-2]:
+            forms.add(base[:-1])
+    if len(token) > 3 and token.endswith("er"):
+        base = token[:-2]
+        forms.add(base)
+        if len(base) > 2 and base[-1] == base[-2]:
+            forms.add(base[:-1])
     return {form for form in forms if is_valid_token(form)}
 
 
@@ -138,6 +154,8 @@ def make_lemma_candidates_fn(lemmatizer: object | None) -> Callable[[str], set[s
             lemma = normalize_token(lemmatizer.lemmatize(token, pos=pos))
             if is_valid_token(lemma):
                 lemmas.add(lemma)
+        # Merge heuristic suffix stripping to catch derivations like -er/-ers.
+        lemmas.update(heuristic_lemma_candidates(token))
         return lemmas
 
     return from_wordnet
@@ -161,28 +179,44 @@ def generate_lexicon(args: argparse.Namespace) -> int:
     ]
     candidates = [word for word in candidates if is_valid_token(word)]
 
-    canonical_score: Dict[str, float] = defaultdict(float)
-    form_to_canonical: Dict[str, str] = {}
+    if args.dedupe_lemma_families:
+        family_score: Dict[str, float] = defaultdict(float)
+        form_to_canonical: Dict[str, str] = {}
+        for token in candidates:
+            lemmas = lemma_candidates_fn(token)
+            base = pick_base_form(lemmas, token)
+            form_to_canonical[token] = base
+            family_score[base] += zipf_frequency(token, "en")
 
-    for token in candidates:
-        canonical = canonical_candidate(
-            token=token,
-            lemma_candidates_fn=lemma_candidates_fn,
-            zipf_frequency=zipf_frequency,
-            lemmatizer=lemmatizer,
+        ranked_canonicals = sorted(
+            family_score.items(),
+            key=lambda item: (-item[1], item[0]),
         )
-        form_to_canonical[token] = canonical
-        canonical_score[canonical] += zipf_frequency(token, "en")
+        canonical_words = [word for word, _ in ranked_canonicals[: args.target_count]]
+    else:
+        canonical_score: Dict[str, float] = defaultdict(float)
+        form_to_canonical = {}
 
-    ranked_canonicals = sorted(
-        canonical_score.items(),
-        key=lambda item: (-item[1], item[0]),
-    )
-    canonical_words = [word for word, _ in ranked_canonicals[: args.target_count]]
+        for token in candidates:
+            canonical = canonical_candidate(
+                token=token,
+                lemma_candidates_fn=lemma_candidates_fn,
+                zipf_frequency=zipf_frequency,
+                lemmatizer=lemmatizer,
+            )
+            form_to_canonical[token] = canonical
+            canonical_score[canonical] += zipf_frequency(token, "en")
+
+        ranked_canonicals = sorted(
+            canonical_score.items(),
+            key=lambda item: (-item[1], item[0]),
+        )
+        canonical_words = [word for word, _ in ranked_canonicals[: args.target_count]]
 
     if len(canonical_words) != args.target_count:
         raise SystemExit(
-            f"Only produced {len(canonical_words)} canonical words; increase --candidate-count."
+            f"Only produced {len(canonical_words)} canonical words; "
+            "increase --candidate-count or disable --dedupe-lemma-families."
         )
 
     canonical_set = set(canonical_words)
@@ -217,6 +251,8 @@ def generate_lexicon(args: argparse.Namespace) -> int:
         },
         "canonicalizationRules": {
             "pastTenseEdPrefersVerbLemma": True,
+            "dedupeLemmaFamilies": bool(args.dedupe_lemma_families),
+            "lemmaFamilyRepresentative": "shortest-lemma" if args.dedupe_lemma_families else "score-weighted",
         },
         "files": {
             "common_words_50k": str(words_path),
@@ -374,6 +410,20 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     generate.add_argument("--target-count", type=int, default=50_000)
     generate.add_argument("--candidate-count", type=int, default=500_000)
     generate.add_argument("--strict-wordnet", action="store_true")
+    dedupe_group = generate.add_mutually_exclusive_group()
+    dedupe_group.add_argument(
+        "--dedupe-lemma-families",
+        dest="dedupe_lemma_families",
+        action="store_true",
+        default=True,
+        help="Collapse lemma families so only one form appears in the canonical list (default).",
+    )
+    dedupe_group.add_argument(
+        "--no-dedupe-lemma-families",
+        dest="dedupe_lemma_families",
+        action="store_false",
+        help="Disable lemma-family deduplication.",
+    )
     generate.set_defaults(func=generate_lexicon)
 
     prune = subparsers.add_parser("prune", help="Prune puzzle files against canonical word list")
