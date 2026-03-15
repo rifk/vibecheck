@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -52,10 +53,15 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalUriHandler
 import com.vibecheck.app.AppContainer
 import com.vibecheck.app.GameController
 import com.vibecheck.app.GameUiState
@@ -874,6 +880,12 @@ private fun ActiveModelMetric(
             expanded = expanded && model != null,
             onDismissRequest = onDismiss
         ) {
+            val infoText = model?.info ?: "No model info available yet."
+            val uriHandler = LocalUriHandler.current
+            val linkColor = MaterialTheme.colorScheme.primary
+            val annotatedInfo = remember(infoText, linkColor) {
+                buildLinkifiedText(infoText, linkColor)
+            }
             Surface(
                 modifier = Modifier.widthIn(max = 320.dp),
                 shape = MaterialTheme.shapes.large,
@@ -894,10 +906,17 @@ private fun ActiveModelMetric(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        model?.info ?: "No model info available yet.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ClickableText(
+                        text = annotatedInfo,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        onClick = { offset ->
+                            annotatedInfo
+                                .getStringAnnotations(tag = "URL", start = offset, end = offset)
+                                .firstOrNull()
+                                ?.let { annotation -> uriHandler.openUri(annotation.item) }
+                        }
                     )
                 }
             }
@@ -969,6 +988,54 @@ private fun SummaryStatTile(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+private fun buildLinkifiedText(
+    text: String,
+    linkColor: Color
+): AnnotatedString {
+    val urlRegex = Regex("https?://\\S+")
+    val trailingPunctuation = setOf('.', ',', ')', ']', '}')
+    return buildAnnotatedString {
+        var lastIndex = 0
+        for (match in urlRegex.findAll(text)) {
+            val start = match.range.first
+            val endExclusive = match.range.last + 1
+            if (start > lastIndex) {
+                append(text.substring(lastIndex, start))
+            }
+
+            val rawUrl = text.substring(start, endExclusive)
+            var trimmedUrl = rawUrl
+            var trailing = ""
+            while (trimmedUrl.isNotEmpty() && trimmedUrl.last() in trailingPunctuation) {
+                trailing = trimmedUrl.last() + trailing
+                trimmedUrl = trimmedUrl.dropLast(1)
+            }
+
+            if (trimmedUrl.isBlank()) {
+                append(rawUrl)
+            } else {
+                val linkStart = length
+                append(trimmedUrl)
+                val linkEnd = length
+                addStringAnnotation(tag = "URL", annotation = trimmedUrl, start = linkStart, end = linkEnd)
+                addStyle(
+                    style = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
+                    start = linkStart,
+                    end = linkEnd
+                )
+                if (trailing.isNotEmpty()) {
+                    append(trailing)
+                }
+            }
+
+            lastIndex = endExclusive
+        }
+        if (lastIndex < text.length) {
+            append(text.substring(lastIndex))
         }
     }
 }
