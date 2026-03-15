@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-03-10T22:07:29.445693+00:00",
+  "generatedAtUtc": "2026-03-15T21:55:24.861633+00:00",
   "targetCanonicalCount": 50000,
   "candidateCount": 500000,
   "tokenRegex": "^[a-z]{2,}$",
@@ -8,14 +8,16 @@
     "lemmatizer": "nltk.wordnet"
   },
   "canonicalizationRules": {
-    "pastTenseEdPrefersVerbLemma": true
+    "pastTenseEdPrefersVerbLemma": true,
+    "dedupeLemmaFamilies": true,
+    "lemmaFamilyRepresentative": "shortest-lemma"
   },
   "files": {
     "common_words_50k": "content/lexicon/common_words_50k.txt",
     "lemma_map": "content/lexicon/lemma_map.json"
   },
   "hashes": {
-    "canonicalWordsSha256": "0bbf47560b5e447898c3502b47d41ed7f39bcf075bc01147a618cdca3c6b252b",
-    "lemmaMapSha256": "6f574e97b994f7a43bc5c71412e3a51435bcdb7d004cf71e845afd00241190f4"
+    "canonicalWordsSha256": "39d59c9261cb28c4d5258defb848be4996b67af576bef54358bb98e213f801c8",
+    "lemmaMapSha256": "78269125f48755d75cb624d51506828855ba333987edf7dedbc8a866890b2c18"
   }
 }
