@@ -645,7 +645,7 @@ private fun GuessHistorySection(uiState: GameUiState) {
             ) {
                 Text(
                     modifier = Modifier.padding(spacing.md),
-                    text = "No guesses yet for this model.",
+                    text = "No guesses yet.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -671,11 +671,6 @@ private fun SolvedOrMessageBanner(uiState: GameUiState) {
 
     when {
         uiState.solved -> {
-            val solvedByName = uiState.availableModels
-                .firstOrNull { it.modelId == uiState.solvedByModelId }
-                ?.title
-                ?: uiState.solvedByModelId
-                ?: "Unknown model"
             val solvedAnswer = uiState.solvedAnswer ?: "Unknown"
 
             Card(
@@ -697,11 +692,6 @@ private fun SolvedOrMessageBanner(uiState: GameUiState) {
                         solvedAnswer,
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        "Cleared by $solvedByName",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

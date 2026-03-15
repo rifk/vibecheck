@@ -52,8 +52,9 @@ Shared model metadata file:
 
 - the app renders any number of models per day dynamically.
 - model presentation copy comes from the shared model metadata file, not the daily puzzle file.
-- solving one model solves the day and locks all other models for that day.
+- every guess applies to all models for that day.
+- the puzzle is solved once globally; model selection only changes the rank view.
 - user guess canonicalization order:
-  - check exact day-list word first;
+  - check exact shared day-list word first (present in every model list);
   - if not present, check `lemma_map.json` for a canonical form;
   - reject if neither path yields a valid ranked word.

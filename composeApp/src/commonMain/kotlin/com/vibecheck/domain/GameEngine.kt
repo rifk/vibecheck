@@ -13,7 +13,7 @@ enum class GuessFailureReason {
     DAY_SOLVED,
     MODEL_LOCKED,
     INVALID_WORD_FORMAT,
-    WORD_NOT_IN_MODEL,
+    WORD_NOT_IN_ALL_MODELS,
     DUPLICATE_GUESS
 }
 
@@ -37,31 +37,25 @@ object GameEngine {
                 utcDate = puzzle.utcDate,
                 selectedModelId = defaultModelId,
                 solved = false,
-                solvedByModelId = null,
                 guessesByModel = emptyMap()
             )
         }
 
-        val filteredGuesses = priorState.guessesByModel.filterKeys { it in validModelIds }
+        val selectedModelId = if (priorState.selectedModelId in validModelIds) {
+            priorState.selectedModelId
+        } else {
+            defaultModelId
+        }
 
-        val solvedByModelId = priorState.solvedByModelId?.takeIf { it in validModelIds }
-            ?: filteredGuesses.entries.firstOrNull { (_, guesses) ->
-                guesses.any { it.rank == 1 }
-            }?.key
-        val solved = solvedByModelId != null
-
-        val selectedModelId = when {
-            solved -> solvedByModelId
-            priorState.selectedModelId in validModelIds -> priorState.selectedModelId
-            else -> defaultModelId
-        } ?: defaultModelId
+        val canonicalGuesses = canonicalGuessOrder(puzzle, priorState)
+        val guessesByModel = buildGuessesByModel(puzzle, canonicalGuesses)
+        val solved = canonicalGuesses.any { it == puzzle.answer }
 
         return DayPlayState(
             utcDate = puzzle.utcDate,
             selectedModelId = selectedModelId,
             solved = solved,
-            solvedByModelId = solvedByModelId,
-            guessesByModel = filteredGuesses
+            guessesByModel = guessesByModel
         )
     }
 
@@ -85,32 +79,33 @@ object GameEngine {
             return GuessSubmissionResult.Rejected(GuessFailureReason.INVALID_WORD_FORMAT)
         }
 
-        val existingGuesses = state.guessesByModel[model.modelId].orEmpty()
-        if (existingGuesses.any { it.guess == normalizedGuess }) {
+        val existingGuesses = canonicalGuessOrder(puzzle, state)
+        if (existingGuesses.any { it == normalizedGuess }) {
             return GuessSubmissionResult.Rejected(GuessFailureReason.DUPLICATE_GUESS)
         }
 
-        val rank = model.rankForGuess(normalizedGuess)
-            ?: return GuessSubmissionResult.Rejected(GuessFailureReason.WORD_NOT_IN_MODEL)
+        val ranksByModel = puzzle.models.associate { puzzleModel ->
+            puzzleModel.modelId to (puzzleModel.rankForGuess(normalizedGuess)
+                ?: return GuessSubmissionResult.Rejected(GuessFailureReason.WORD_NOT_IN_ALL_MODELS))
+        }
 
-        val outcome = GuessOutcome(guess = normalizedGuess, rank = rank)
-        val updatedGuesses = existingGuesses + outcome
-        val solvedNow = rank == 1
+        val updatedGuesses = existingGuesses + normalizedGuess
+        val updatedGuessesByModel = buildGuessesByModel(puzzle, updatedGuesses)
+        val solvedNow = ranksByModel.values.any { it == 1 }
 
         val updatedState = state.copy(
             solved = solvedNow,
-            solvedByModelId = if (solvedNow) model.modelId else null,
-            selectedModelId = if (solvedNow) model.modelId else state.selectedModelId,
-            guessesByModel = state.guessesByModel + (model.modelId to updatedGuesses)
+            selectedModelId = state.selectedModelId,
+            guessesByModel = updatedGuessesByModel
         )
 
+        val outcome = GuessOutcome(guess = normalizedGuess, rank = ranksByModel[model.modelId] ?: 0)
         return GuessSubmissionResult.Accepted(updatedState, outcome, solvedNow)
     }
 
     fun updateStatsOnSolve(
         currentStats: PlayerStats,
         solvedDate: LocalDate,
-        solvedModelId: String,
         guessesToSolve: Int
     ): PlayerStats {
         val solvedDateKey = solvedDate.toString()
@@ -121,27 +116,10 @@ object GameEngine {
         val solvedDates = currentStats.solvedDates + solvedDateKey
         val (currentStreak, maxStreak) = computeStreaks(solvedDates)
 
-        val totalGuessesByModel = currentStats.totalGuessesByModel.toMutableMap().apply {
-            put(solvedModelId, (this[solvedModelId] ?: 0) + guessesToSolve)
-        }
-
-        val winsByModel = currentStats.winsByModel.toMutableMap().apply {
-            put(solvedModelId, (this[solvedModelId] ?: 0) + 1)
-        }
-
-        val bestGuessesByModel = currentStats.bestGuessesByModel.toMutableMap().apply {
-            val existingBest = this[solvedModelId]
-            put(
-                solvedModelId,
-                if (existingBest == null) guessesToSolve else minOf(existingBest, guessesToSolve)
-            )
-        }
-
         val solveHistoryByDate = currentStats.solveHistoryByDate.toMutableMap().apply {
             put(
                 solvedDateKey,
                 DaySolveRecord(
-                    modelId = solvedModelId,
                     guessesToSolve = guessesToSolve
                 )
             )
@@ -153,11 +131,39 @@ object GameEngine {
             maxStreak = maxStreak,
             solvedDates = solvedDates,
             lastSolvedDate = solvedDates.maxOrNull(),
-            totalGuessesByModel = totalGuessesByModel,
-            winsByModel = winsByModel,
-            bestGuessesByModel = bestGuessesByModel,
             solveHistoryByDate = solveHistoryByDate
         )
+    }
+
+    private fun canonicalGuessOrder(puzzle: DayPuzzle, state: DayPlayState): List<String> {
+        if (state.guessesByModel.isEmpty()) return emptyList()
+        val ordered = mutableListOf<String>()
+        puzzle.models.forEach { model ->
+            state.guessesByModel[model.modelId].orEmpty().forEach { outcome ->
+                if (outcome.guess !in ordered) {
+                    ordered.add(outcome.guess)
+                }
+            }
+        }
+        return ordered.filter { guess ->
+            puzzle.models.all { it.rankForGuess(guess) != null }
+        }
+    }
+
+    private fun canonicalGuessOrder(puzzle: DayPuzzle, priorState: DayPlayState?): List<String> {
+        if (priorState == null) return emptyList()
+        return canonicalGuessOrder(puzzle, priorState)
+    }
+
+    private fun buildGuessesByModel(puzzle: DayPuzzle, guesses: List<String>): Map<String, List<GuessOutcome>> {
+        if (guesses.isEmpty()) return emptyMap()
+        return puzzle.models.associate { model ->
+            val outcomes = guesses.mapNotNull { guess ->
+                val rank = model.rankForGuess(guess) ?: return@mapNotNull null
+                GuessOutcome(guess = guess, rank = rank)
+            }
+            model.modelId to outcomes
+        }
     }
 
     private fun computeStreaks(solvedDates: Set<String>): Pair<Int, Int> {

@@ -150,9 +150,9 @@ class GameController(
         val state = currentDayState ?: return
 
         val normalizedGuess = WordRules.normalize(uiState.guessInput)
-        val dayWordSet = puzzle.models.asSequence()
-            .flatMap { it.rankedWords.asSequence() }
-            .toSet()
+        val dayWordSet = puzzle.models
+            .map { it.rankedWords.toSet() }
+            .reduce { acc, words -> acc intersect words }
         val canonicalGuess = when {
             normalizedGuess in dayWordSet -> normalizedGuess
             else -> guessLexicon.canonicalize(normalizedGuess) ?: normalizedGuess
@@ -170,13 +170,11 @@ class GameController(
 
                 if (result.solvedNow) {
                     val solvedDate = currentDate ?: return
-                    val solvedModelId = result.updatedState.solvedByModelId ?: return
-                    val guessCount = result.updatedState.guessesByModel[solvedModelId].orEmpty().size
+                    val guessCount = result.updatedState.guessesByModel.values.firstOrNull()?.size ?: 0
                     persistedState = persistedState.copy(
                         stats = GameEngine.updateStatsOnSolve(
                             currentStats = persistedState.stats,
                             solvedDate = solvedDate,
-                            solvedModelId = solvedModelId,
                             guessesToSolve = guessCount
                         )
                     )
@@ -184,7 +182,7 @@ class GameController(
                 }
 
                 val rankMessage = "${result.outcome.guess} is ranked #${result.outcome.rank}."
-                val solveGuessCount = result.updatedState.guessesByModel[result.updatedState.selectedModelId].orEmpty().size
+                val solveGuessCount = result.updatedState.guessesByModel.values.firstOrNull()?.size ?: 0
                 val solveMessage = if (result.solvedNow) {
                     "You solved today's Vibe Check in $solveGuessCount guesses."
                 } else {
@@ -250,7 +248,6 @@ class GameController(
             selectedModelId = state.selectedModelId,
             guesses = guesses,
             solved = state.solved,
-            solvedByModelId = state.solvedByModelId,
             solvedAnswer = if (state.solved) puzzle.answer else null,
             guessInput = if (clearInput) "" else uiState.guessInput,
             message = message,
@@ -268,7 +265,7 @@ class GameController(
         GuessFailureReason.DAY_SOLVED -> "This day is already solved."
         GuessFailureReason.MODEL_LOCKED -> "Selected model is unavailable."
         GuessFailureReason.INVALID_WORD_FORMAT -> "Use a lowercase English word."
-        GuessFailureReason.WORD_NOT_IN_MODEL -> "That word is not in this model's dictionary."
+        GuessFailureReason.WORD_NOT_IN_ALL_MODELS -> "That word isn't in every model's dictionary."
         GuessFailureReason.DUPLICATE_GUESS -> "You've already guessed that word."
     }
 }
@@ -282,7 +279,6 @@ data class GameUiState(
     val selectedModelId: String? = null,
     val guesses: List<GuessOutcome> = emptyList(),
     val solved: Boolean = false,
-    val solvedByModelId: String? = null,
     val solvedAnswer: String? = null,
     val guessInput: String = "",
     val message: String? = null,
