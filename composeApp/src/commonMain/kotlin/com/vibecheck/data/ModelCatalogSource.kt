@@ -7,6 +7,10 @@ interface ModelCatalogSource {
     suspend fun getCatalog(): Map<String, ModelMetadata>
 }
 
+class NoOpModelCatalogSource : ModelCatalogSource {
+    override suspend fun getCatalog(): Map<String, ModelMetadata> = emptyMap()
+}
+
 class BundledModelCatalogSource(
     private val parser: ModelCatalogJsonParser = ModelCatalogJsonParser()
 ) : ModelCatalogSource {

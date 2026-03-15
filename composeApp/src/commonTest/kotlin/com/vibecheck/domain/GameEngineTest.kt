@@ -79,7 +79,6 @@ class GameEngineTest {
     }
 
     @Test
-    @Test
     fun fillingGapLater_extendsCurrentStreakFromLatestSolvedDate() {
         val initial = com.vibecheck.model.PlayerStats()
         val dayFive = LocalDate.parse("2026-01-05")
@@ -96,13 +95,13 @@ class GameEngineTest {
     }
 
     @Test
-    fun guessesApplyToAllModels() {
+    fun guessesTrackPerModel() {
         val puzzle = DayPuzzle(
             utcDate = "2026-01-10",
             answer = "signal",
             models = listOf(
                 ModelPuzzle("m1", listOf("signal", "noise", "tone")),
-                ModelPuzzle("m2", listOf("signal", "wave", "beam"))
+                ModelPuzzle("m2", listOf("signal", "noise", "beam"))
             )
         )
 
@@ -113,19 +112,19 @@ class GameEngineTest {
             guessesByModel = emptyMap()
         )
 
-        val m1Guess = GameEngine.submitGuess(state, puzzle, "signal") as GuessSubmissionResult.Accepted
+        val m1Guess = GameEngine.submitGuess(state, puzzle, "noise") as GuessSubmissionResult.Accepted
         state = m1Guess.updatedState
 
         state = GameEngine.selectModel(state, puzzle, "m2")
-        val m2Guess = GameEngine.submitGuess(state, puzzle, "signal")
+        val m2Guess = GameEngine.submitGuess(state, puzzle, "noise")
 
-        assertIs<GuessSubmissionResult.Rejected>(m2Guess)
+        assertIs<GuessSubmissionResult.Accepted>(m2Guess)
         assertEquals(1, state.guessesByModel["m1"]?.size)
-        assertEquals(1, state.guessesByModel["m2"]?.size)
+        assertEquals(1, m2Guess.updatedState.guessesByModel["m2"]?.size)
     }
 
     @Test
-    fun guessMissingFromAnyModel_isRejected() {
+    fun guessMissingFromSelectedModel_isRejected() {
         val puzzle = DayPuzzle(
             utcDate = "2026-01-11",
             answer = "signal",
@@ -142,7 +141,7 @@ class GameEngineTest {
             guessesByModel = emptyMap()
         )
 
-        val result = GameEngine.submitGuess(state, puzzle, "noise")
+        val result = GameEngine.submitGuess(state, puzzle, "tone")
         val rejected = assertIs<GuessSubmissionResult.Rejected>(result)
         assertEquals(GuessFailureReason.WORD_NOT_IN_ALL_MODELS, rejected.reason)
     }

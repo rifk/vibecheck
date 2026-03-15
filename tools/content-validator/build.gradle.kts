@@ -25,8 +25,8 @@ tasks.test {
 tasks.named<JavaExec>("run") {
     args(
         rootProject.layout.projectDirectory.dir("content/puzzles").asFile.absolutePath,
-        "2026-01-01",
-        "90",
+        "2026-03-01",
+        "61",
         rootProject.layout.projectDirectory.file("content/lexicon/common_words_50k.txt").asFile.absolutePath,
         rootProject.layout.projectDirectory.file("content/models/model_info.json").asFile.absolutePath
     )
