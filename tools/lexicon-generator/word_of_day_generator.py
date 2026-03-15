@@ -52,9 +52,14 @@ def parse_args() -> argparse.Namespace:
         help="Replace already assigned words in the target date range.",
     )
     parser.add_argument(
+        "--fill-missing-only",
+        action="store_true",
+        help="Only fill missing dates; existing entries are preserved.",
+    )
+    parser.add_argument(
         "--common-bias",
         type=float,
-        default=2.0,
+        default=1.0,
         help=(
             "Bias toward earlier (more common) words in the 50k list. "
             "1.0 = uniform, higher values increase common-word preference."
@@ -122,6 +127,10 @@ def main() -> int:
         raise SystemExit("--days must be > 0")
     if args.common_bias <= 0:
         raise SystemExit("--common-bias must be > 0")
+    if args.common_bias <= 1.0:
+        print(
+            "Note: --common-bias <= 1.0 yields uniform selection (no common-word bias).",
+        )
 
     words_file = Path(args.words_file)
     output_file = Path(args.output)
@@ -136,11 +145,17 @@ def main() -> int:
         for offset in range(args.days)
     ]
 
+    if args.fill_missing_only and args.overwrite_existing:
+        raise SystemExit("--fill-missing-only cannot be used with --overwrite-existing")
+
     editable_dates = [
         date_key
         for date_key in target_dates
         if args.overwrite_existing or date_key not in existing_entries
     ]
+    if not editable_dates and not args.overwrite_existing:
+        print("No missing days in the requested range; nothing to update.")
+        return 0
 
     locked_entries = {
         date_key: word

@@ -68,10 +68,11 @@ python3 tools/lexicon-generator/word_of_day_generator.py \
 
 ## Build embedding artifacts
 
-Two scripts generate normalized embedding artifacts for the canonical lexicon:
+Three scripts generate normalized embedding artifacts for the canonical lexicon:
 
-- `embedding_matrix_sentence_transformer.py` using `google/embeddinggemma-300m`
-- `embedding_matrix_openai.py` using `text-embedding-3-large`
+- `embedding_matrix_sentence_transformer.py` using `google/embeddinggemma-300m` (20k words)
+- `embedding_matrix_sentence_transformer_alibaba.py` using `Alibaba-NLP/gte-Qwen2-1.5B-instruct` (50k words)
+- `embedding_matrix_openai.py` using `text-embedding-3-large` (20k words)
 
 Install dependencies:
 
@@ -79,7 +80,7 @@ Install dependencies:
 python3 -m pip install -r tools/lexicon-generator/requirements.txt
 ```
 
-### 1) SentenceTransformer embeddings
+### 1) SentenceTransformer embeddings (EmbeddingGemma 300M, 20k)
 
 Build:
 
@@ -98,7 +99,26 @@ python3 tools/lexicon-generator/embedding_matrix_sentence_transformer.py query \
   --top-k 25
 ```
 
-### 2) OpenAI embeddings
+### 2) SentenceTransformer embeddings (Alibaba GTE Qwen2 1.5B, 50k)
+
+Build:
+
+```bash
+python3 tools/lexicon-generator/embedding_matrix_sentence_transformer_alibaba.py build \
+  --words-file content/lexicon/common_words_50k.txt \
+  --output-dir content/lexicon/embeddings/sentence_transformer_alibaba_gte-qwen2-1_5b-instruct
+```
+
+Query:
+
+```bash
+python3 tools/lexicon-generator/embedding_matrix_sentence_transformer_alibaba.py query \
+  --output-dir content/lexicon/embeddings/sentence_transformer_alibaba_gte-qwen2-1_5b-instruct \
+  --word apple \
+  --top-k 25
+```
+
+### 3) OpenAI embeddings
 
 Build:
 
@@ -118,7 +138,7 @@ python3 tools/lexicon-generator/embedding_matrix_openai.py query \
   --top-k 25
 ```
 
-### Artifact layout (same schema for both scripts)
+### Artifact layout (same schema for all scripts)
 
 Each output directory contains:
 
@@ -133,7 +153,7 @@ Stored vectors are normalized to unit length. Query distance is computed on dema
 
 ### Useful dev options
 
-Both build commands support:
+All embedding build commands support:
 
 - `--limit N` for tiny test runs
 - `--batch-size` for embedding batch size
