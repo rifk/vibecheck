@@ -6,7 +6,7 @@ Vibe Check is a Kotlin Multiplatform daily word-ranking game targeting Android, 
 
 The web version is hosted on GitHub Pages and deployed from the repository's `main` branch.
 
-A direct link can be added here as soon as the GitHub repository URL is finalized.
+Play here: https://rifk.github.io/vibecheck/
 
 ## Quick Start
 
