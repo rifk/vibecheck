@@ -1,28 +1,22 @@
 {
   "models": [
     {
-      "modelId": "model_1",
-      "title": "Atlas",
-      "description": "Broad mapmaker",
-      "info": "Atlas sweeps a wide semantic area first, then tightens its guesses once it spots a stable region. Expect it to feel exploratory early and more decisive once a pattern clicks."
+      "modelId": "google-embeddinggemma-300m",
+      "title": "Google",
+      "description": "EmbeddingGemma-300m",
+      "info": "Google's EmbeddingGemma model, a 300M parameter text embedding model based on Gemma 3. https://ai.google.dev/gemma/docs/embeddinggemma"
     },
     {
-      "modelId": "model_2",
-      "title": "Spark",
-      "description": "Fast pattern chaser",
-      "info": "Spark leans toward sharp local similarities and quick pivots. It often acts like it has found a scent trail and is willing to commit harder to one neighborhood."
+      "modelId": "openai-text-embedding-3-large",
+      "title": "OpenAI",
+      "description": "text-embedding-3-large",
+      "info": "OpenAI's text-embedding-3-large model. https://developers.openai.com/api/docs/models/text-embedding-3-large"
     },
     {
-      "modelId": "model_3",
-      "title": "Drift",
-      "description": "Layered wanderer",
-      "info": "Drift moves through the board in softer arcs, linking words through broader thematic texture instead of direct jumps. Its rankings can feel mood-driven in a useful way."
-    },
-    {
-      "modelId": "model_4",
-      "title": "Prism",
-      "description": "Contrast-heavy scout",
-      "info": "Prism tends to separate close concepts by testing contrast as much as similarity. It is good for seeing where a puzzle splits into adjacent but distinct clusters."
+      "modelId": "alibaba-gte-qwen2-7b-instruct",
+      "title": "Alibaba",
+      "description": "gte-Qwen2-7B-instruct",
+      "info": "Alibaba's gte-Qwen2-7B-instruct model. https://huggingface.co/Alibaba-NLP/gte-Qwen2-7B-instruct"
     }
   ]
 }

@@ -25,9 +25,9 @@ Shared model metadata file:
 {
   "models": [
     {
-      "modelId": "model_1",
-      "title": "Model 1",
-      "description": "Short summary",
+      "modelId": "google-embeddinggemma-300m",
+      "title": "Google",
+      "description": "EmbeddingGemma-300m",
       "info": "Longer explanation shown in the active model panel."
     }
   ]
@@ -41,7 +41,7 @@ Shared model metadata file:
 - `rankedWords` must be non-empty.
 - `rankedWords[0]` must equal `answer`.
 - words must be canonical lowercase alphabetic tokens (`^[a-z]{2,}$`).
-- `answer` and all `rankedWords` entries must exist in `content/lexicon/common_words_20k.txt`.
+- `answer` and all `rankedWords` entries must exist in `content/lexicon/common_words_50k.txt`.
 - duplicate words in one model list are not allowed.
 - every `modelId` referenced by a puzzle must exist in `content/models/model_info.json`.
 - metadata `modelId`, `title`, `description`, and `info` must be non-empty.
