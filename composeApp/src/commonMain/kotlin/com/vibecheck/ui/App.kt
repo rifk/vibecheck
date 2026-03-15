@@ -537,12 +537,7 @@ private fun ModelSelector(
                 .heightIn(min = sizes.minTouchTarget)
                 .semantics { contentDescription = "Select model ${model.title}" }
 
-            val summary = buildString {
-                append("${model.attempts} tries")
-                model.bestRank?.let {
-                    append(" / best #$it")
-                }
-            }
+            val summary = model.bestRank?.let { "Best #$it" } ?: "Best —"
 
             if (selected) {
                 Button(
