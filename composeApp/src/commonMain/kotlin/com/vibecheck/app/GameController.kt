@@ -161,7 +161,12 @@ class GameController(
         val result = GameEngine.submitGuess(state, puzzle, canonicalGuess)
         when (result) {
             is GuessSubmissionResult.Rejected -> {
-                uiState = buildUiState(message = rejectionMessage(result.reason))
+                val shouldClear = when (result.reason) {
+                    GuessFailureReason.INVALID_WORD_FORMAT,
+                    GuessFailureReason.WORD_NOT_IN_ALL_MODELS -> true
+                    else -> false
+                }
+                uiState = buildUiState(message = rejectionMessage(result.reason), clearInput = shouldClear)
             }
 
             is GuessSubmissionResult.Accepted -> {
