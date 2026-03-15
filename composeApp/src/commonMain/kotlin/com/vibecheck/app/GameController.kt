@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.vibecheck.data.GameStateStore
 import com.vibecheck.data.ModelCatalogSource
+import com.vibecheck.data.NoOpModelCatalogSource
 import com.vibecheck.data.PuzzleSource
 import com.vibecheck.domain.GameEngine
 import com.vibecheck.domain.GuessLexicon
@@ -25,9 +26,7 @@ import kotlinx.datetime.plus
 
 class GameController(
     private val puzzleSource: PuzzleSource,
-    private val modelCatalogSource: ModelCatalogSource = object : ModelCatalogSource {
-        override suspend fun getCatalog(): Map<String, ModelMetadata> = emptyMap()
-    },
+    private val modelCatalogSource: ModelCatalogSource = NoOpModelCatalogSource(),
     private val gameStateStore: GameStateStore,
     private val utcDateProvider: UtcDateProvider,
     private val guessLexicon: GuessLexicon = NoOpGuessLexicon
