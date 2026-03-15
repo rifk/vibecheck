@@ -10,6 +10,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+val generatedContentRoot = layout.buildDirectory.dir("generated/content")
+val generatedComposeResources = generatedContentRoot.map { it.dir("composeResources") }
+val composeResourcesPackage = "${rootProject.name.replace("-", "_")}.${project.name.lowercase()}.generated.resources"
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -51,6 +55,7 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
+            resources.srcDir(generatedContentRoot)
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
@@ -111,17 +116,17 @@ android {
 
 val syncPuzzleContent by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.dir("content/puzzles"))
-    into(layout.projectDirectory.dir("src/commonMain/composeResources/files/puzzles"))
+    into(generatedComposeResources.map { it.dir("${composeResourcesPackage}/files/puzzles") })
 }
 
 val syncLexiconContent by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.dir("content/lexicon"))
-    into(layout.projectDirectory.dir("src/commonMain/composeResources/files/lexicon"))
+    into(generatedComposeResources.map { it.dir("${composeResourcesPackage}/files/lexicon") })
 }
 
 val syncModelContent by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.dir("content/models"))
-    into(layout.projectDirectory.dir("src/commonMain/composeResources/files/models"))
+    into(generatedComposeResources.map { it.dir("${composeResourcesPackage}/files/models") })
 }
 
 tasks.matching {
