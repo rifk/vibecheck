@@ -101,7 +101,7 @@ class GameEngineTest {
             answer = "signal",
             models = listOf(
                 ModelPuzzle("m1", listOf("signal", "noise", "tone")),
-                ModelPuzzle("m2", listOf("signal", "noise", "beam"))
+                ModelPuzzle("m2", listOf("signal", "noise", "tone"))
             )
         )
 
@@ -112,15 +112,18 @@ class GameEngineTest {
             guessesByModel = emptyMap()
         )
 
-        val m1Guess = GameEngine.submitGuess(state, puzzle, "noise") as GuessSubmissionResult.Accepted
-        state = m1Guess.updatedState
+        val firstGuess = GameEngine.submitGuess(state, puzzle, "noise") as GuessSubmissionResult.Accepted
+        state = firstGuess.updatedState
+
+        assertEquals(1, state.guessesByModel["m1"]?.size)
+        assertEquals(1, state.guessesByModel["m2"]?.size)
 
         state = GameEngine.selectModel(state, puzzle, "m2")
-        val m2Guess = GameEngine.submitGuess(state, puzzle, "noise")
+        val m2Guess = GameEngine.submitGuess(state, puzzle, "tone")
 
         assertIs<GuessSubmissionResult.Accepted>(m2Guess)
-        assertEquals(1, state.guessesByModel["m1"]?.size)
-        assertEquals(1, m2Guess.updatedState.guessesByModel["m2"]?.size)
+        assertEquals(2, m2Guess.updatedState.guessesByModel["m1"]?.size)
+        assertEquals(2, m2Guess.updatedState.guessesByModel["m2"]?.size)
     }
 
     @Test
@@ -169,7 +172,7 @@ class GameEngineTest {
         val state = GameEngine.initialDayState(puzzle, prior)
 
         assertEquals("newA", state.selectedModelId)
-        assertEquals(setOf("newA"), state.guessesByModel.keys)
+        assertEquals(setOf("newA", "newB"), state.guessesByModel.keys)
     }
 
     @Test

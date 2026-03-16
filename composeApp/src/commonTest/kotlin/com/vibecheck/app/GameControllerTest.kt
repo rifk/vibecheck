@@ -152,25 +152,25 @@ class GameControllerTest {
 
         controller.onModelSelected("m2")
         assertEquals("m2", controller.uiState.selectedModelId)
-        assertEquals(0, controller.uiState.guesses.size)
+        assertEquals(1, controller.uiState.guesses.size)
 
         controller.onGuessChanged("tone")
         controller.submitGuess()
 
         assertEquals("This day is already solved.", controller.uiState.message)
         assertEquals("m2", controller.uiState.selectedModelId)
-        assertEquals(0, controller.uiState.guesses.size)
+        assertEquals(1, controller.uiState.guesses.size)
     }
 
     @Test
-    fun historiesRemainSeparate_beforeSolve() = runTest {
+    fun historiesSharedAcrossModels_beforeSolve() = runTest {
         val date = LocalDate.parse("2026-01-03")
         val puzzle = DayPuzzle(
             utcDate = date.toString(),
             answer = "anchor",
             models = listOf(
-                ModelPuzzle("m1", listOf("anchor", "chain", "ship")),
-                ModelPuzzle("m2", listOf("anchor", "dock", "port"))
+                ModelPuzzle("m1", listOf("anchor", "chain", "ship", "dock")),
+                ModelPuzzle("m2", listOf("anchor", "dock", "port", "chain"))
             )
         )
 
@@ -190,7 +190,7 @@ class GameControllerTest {
 
         assertFalse(controller.uiState.solved)
         controller.onModelSelected("m1")
-        assertEquals(1, controller.uiState.guesses.size)
+        assertEquals(2, controller.uiState.guesses.size)
     }
 
     @Test
@@ -200,8 +200,8 @@ class GameControllerTest {
             utcDate = date.toString(),
             answer = "anchor",
             models = listOf(
-                ModelPuzzle("m1", listOf("anchor", "chain", "ship")),
-                ModelPuzzle("m2", listOf("anchor", "dock", "port"))
+                ModelPuzzle("m1", listOf("anchor", "alpha", "bravo", "charlie", "delta")),
+                ModelPuzzle("m2", listOf("anchor", "charlie", "delta", "alpha", "bravo"))
             )
         )
 
@@ -212,20 +212,18 @@ class GameControllerTest {
         )
 
         controller.loadToday()
-        controller.onGuessChanged("ship")
+        controller.onGuessChanged("alpha")
         controller.submitGuess()
 
         controller.onModelSelected("m2")
-        controller.onGuessChanged("port")
-        controller.submitGuess()
-        controller.onGuessChanged("dock")
+        controller.onGuessChanged("bravo")
         controller.submitGuess()
 
         val modelsById = controller.uiState.availableModels.associateBy { it.modelId }
-        assertEquals(1, modelsById.getValue("m1").attempts)
-        assertEquals(3, modelsById.getValue("m1").bestRank)
+        assertEquals(2, modelsById.getValue("m1").attempts)
+        assertEquals(2, modelsById.getValue("m1").bestRank)
         assertEquals(2, modelsById.getValue("m2").attempts)
-        assertEquals(2, modelsById.getValue("m2").bestRank)
+        assertEquals(4, modelsById.getValue("m2").bestRank)
     }
 
     @Test

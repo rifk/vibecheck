@@ -47,7 +47,7 @@ object GameEngine {
             defaultModelId
         }
 
-        val guessesByModel = pruneGuessesByModel(puzzle, priorState)
+        val guessesByModel = reconcileGuessesByModel(puzzle, priorState)
         val solved = priorState.solved || guessesByModel.values.flatten().any { it.guess == puzzle.answer }
 
         return DayPlayState(
@@ -70,7 +70,7 @@ object GameEngine {
             return GuessSubmissionResult.Rejected(GuessFailureReason.DAY_SOLVED)
         }
 
-        val model = puzzle.models.firstOrNull { it.modelId == state.selectedModelId }
+        val selectedModel = puzzle.models.firstOrNull { it.modelId == state.selectedModelId }
             ?: return GuessSubmissionResult.Rejected(GuessFailureReason.MODEL_LOCKED)
 
         val normalizedGuess = WordRules.normalize(inputGuess)
@@ -78,17 +78,28 @@ object GameEngine {
             return GuessSubmissionResult.Rejected(GuessFailureReason.INVALID_WORD_FORMAT)
         }
 
-        val existingGuesses = state.guessesByModel[state.selectedModelId].orEmpty()
-        if (existingGuesses.any { it.guess == normalizedGuess }) {
+        val existingGuesses = sharedGuesses(state, puzzle)
+        if (existingGuesses.any { it == normalizedGuess }) {
             return GuessSubmissionResult.Rejected(GuessFailureReason.DUPLICATE_GUESS)
         }
 
-        val rank = model.rankForGuess(normalizedGuess)
-            ?: return GuessSubmissionResult.Rejected(GuessFailureReason.WORD_NOT_IN_ALL_MODELS)
+        val ranksByModel = puzzle.models.associate { model ->
+            model.modelId to model.rankForGuess(normalizedGuess)
+        }
+        if (ranksByModel.values.any { it == null }) {
+            return GuessSubmissionResult.Rejected(GuessFailureReason.WORD_NOT_IN_ALL_MODELS)
+        }
 
-        val updatedGuesses = existingGuesses + GuessOutcome(guess = normalizedGuess, rank = rank)
-        val updatedGuessesByModel = state.guessesByModel + (model.modelId to updatedGuesses)
-        val solvedNow = rank == 1
+        val allGuesses = existingGuesses + normalizedGuess
+        val updatedGuessesByModel = puzzle.models.associate { model ->
+            val outcomes = allGuesses.mapNotNull { guess ->
+                val rank = model.rankForGuess(guess) ?: return@mapNotNull null
+                GuessOutcome(guess = guess, rank = rank)
+            }
+            model.modelId to outcomes
+        }
+        val selectedRank = ranksByModel.getValue(selectedModel.modelId)!!
+        val solvedNow = selectedRank == 1
 
         val updatedState = state.copy(
             solved = state.solved || solvedNow,
@@ -96,7 +107,7 @@ object GameEngine {
             guessesByModel = updatedGuessesByModel
         )
 
-        val outcome = GuessOutcome(guess = normalizedGuess, rank = rank)
+        val outcome = GuessOutcome(guess = normalizedGuess, rank = selectedRank)
         return GuessSubmissionResult.Accepted(updatedState, outcome, solvedNow)
     }
 
@@ -132,20 +143,34 @@ object GameEngine {
         )
     }
 
-    private fun pruneGuessesByModel(puzzle: DayPuzzle, priorState: DayPlayState): Map<String, List<GuessOutcome>> {
+    private fun reconcileGuessesByModel(puzzle: DayPuzzle, priorState: DayPlayState): Map<String, List<GuessOutcome>> {
         if (priorState.guessesByModel.isEmpty()) return emptyMap()
-        val modelsById = puzzle.models.associateBy { it.modelId }
-        return priorState.guessesByModel
-            .mapNotNull { (modelId, guesses) ->
-                val model = modelsById[modelId] ?: return@mapNotNull null
-                val filtered = guesses.mapNotNull { outcome ->
-                    val rank = model.rankForGuess(outcome.guess) ?: return@mapNotNull null
-                    GuessOutcome(guess = outcome.guess, rank = rank)
-                }
-                modelId to filtered
+        val seedGuesses = priorState.guessesByModel[priorState.selectedModelId]
+            ?: priorState.guessesByModel.values.firstOrNull()
+            ?: return emptyMap()
+        val sharedGuesses = seedGuesses
+            .map { it.guess }
+            .distinct()
+            .filter { guess -> puzzle.models.all { model -> model.rankForGuess(guess) != null } }
+        if (sharedGuesses.isEmpty()) return emptyMap()
+        return puzzle.models.associate { model ->
+            val outcomes = sharedGuesses.mapNotNull { guess ->
+                val rank = model.rankForGuess(guess) ?: return@mapNotNull null
+                GuessOutcome(guess = guess, rank = rank)
             }
-            .toMap()
-            .filterValues { it.isNotEmpty() }
+            model.modelId to outcomes
+        }
+    }
+
+    private fun sharedGuesses(state: DayPlayState, puzzle: DayPuzzle): List<String> {
+        if (state.guessesByModel.isEmpty()) return emptyList()
+        val seedGuesses = state.guessesByModel[state.selectedModelId]
+            ?: state.guessesByModel.values.firstOrNull()
+            ?: return emptyList()
+        return seedGuesses
+            .map { it.guess }
+            .distinct()
+            .filter { guess -> puzzle.models.all { model -> model.rankForGuess(guess) != null } }
     }
 
     private fun computeStreaks(solvedDates: Set<String>): Pair<Int, Int> {
