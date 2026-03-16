@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -145,6 +146,7 @@ private fun GameScreen(controller: GameController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .widthIn(max = sizes.contentMaxWidth),
+                                contentPadding = PaddingValues(vertical = spacing.lg),
                                 verticalArrangement = Arrangement.spacedBy(spacing.md)
                             ) {
                                 item {
@@ -200,6 +202,7 @@ private fun GameScreen(controller: GameController) {
                             ) {
                                 LazyColumn(
                                     modifier = Modifier.weight(1.08f),
+                                    contentPadding = PaddingValues(vertical = spacing.lg),
                                     verticalArrangement = Arrangement.spacedBy(spacing.md)
                                 ) {
                                     item {
@@ -243,6 +246,7 @@ private fun GameScreen(controller: GameController) {
 
                                 LazyColumn(
                                     modifier = Modifier.weight(0.92f),
+                                    contentPadding = PaddingValues(vertical = spacing.lg),
                                     verticalArrangement = Arrangement.spacedBy(spacing.md)
                                 ) {
                                     if (!uiState.isLoading && uiState.puzzleAvailable) {
