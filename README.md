@@ -2,6 +2,10 @@
 
 Vibe Check is a Kotlin Multiplatform daily word-ranking game targeting Android, iOS, and the web with Kotlin/Wasm.
 
+## Motivation
+
+This was created with the purpose of trying out "vibe coding". Basically all the code was written using the Codex app.
+
 ## Play Online
 
 The web version is hosted on GitHub Pages and deployed from the repository's `main` branch.
